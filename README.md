@@ -164,7 +164,7 @@ Engineering-Infrastructure/
 │   ├── tests/                  # Workflow and deployment tests
 │   └── reports/                # Sanitized validation and engineering records
 ├── pr-authoring-kit/
-│   └── pr-authoring/           # Deployable PR skill, template, example
+│   └── pr-authoring/           # Deployable PR skill, template, example, body lint
 └── LICENSE
 ```
 

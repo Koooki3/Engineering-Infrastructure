@@ -1,11 +1,15 @@
 ---
 name: pr-authoring
-description: Draft, validate, review, or prepare GitHub pull requests with an English title, evidence-driven English body, and concise Simplified Chinese translation; adapt to upstream contribution and AI policies.
+description: Plan, draft, create, update, review, or validate GitHub pull requests or PR descriptions using evidence-driven bilingual authoring, subject to upstream contribution and AI policies.
 ---
 
 # Pull Request Authoring Protocol v1.0
 
 适用范围：本地 Coding Agents、个人仓库及允许双语内容的上游 GitHub 仓库。本文是自定义工程规范，并非 ISO 标准或 GitHub 强制要求。MUST 表示本规范强制，SHOULD 表示默认建议，MAY 表示可选。
+
+## Task modes
+
+For PR review, review the actual diff for correctness and risks using the applicable review workflow; use this skill to assess the description and evidence. Do not replace code review with prose review, rewrite the PR, or post feedback unless requested and authorized. For planning or description review, return findings or a plan appropriate to the request; a complete title and body are not mandatory. Draft or update a full body only when requested. For a requested PR body, keep an English title, complete English body, and a final plain-text Chinese summary headed `## 中文摘要` by default, including local-only, hypothetical, and concise drafts. Apply known upstream or user language constraints first. If upstream policy is unknown, keep the bilingual draft local and flag the policy check before publication. Before returning, confirm that the Chinese summary preserves the key change and actual validation status.
 
 ## 1. Policy precedence / 规范优先级
 
@@ -65,6 +69,16 @@ Complexity profiles (not hard limits):
 - Standard: ~150–450 English words; Summary + Changes + Validation + applicable visual/risk sections; Chinese ~3–6 bullets.
 - Complex/high-risk: ~350–900 English words before detailed logs, include architecture, reproducible evidence, compatibility, rollback and reviewer notes as applicable. Chinese ~150–400 Chinese characters unless risks require more. Long logs/trace details may be collapsed in English with `<details>`; never hide critical caveats or headline failures. The lengths are guidelines, not targets.
 
+Scenario adaptation (pick by dominant intent; combine only what applies; never paste the full template):
+- Simple bug fix: Small profile. Symptom, root cause if demonstrated, fix, regression test or reason none. No media, diagram or emoji required.
+- Feature: Standard. Summary, Changes, Validation, docs/compat. Visual Evidence only when user-visible.
+- UI/UX: Standard. Comparable Before/After captures, theme/DPI/state conditions, accessibility checks actually run. Missing captures disclosed.
+- Animation/motion: Standard to Complex. Real recording, interruption/reversal cases, reduced-motion behavior; recording is qualitative, add frame-time data only if measured.
+- Performance: Standard to Complex. Metric table with baseline and method, or an explicit statement that nothing was measured and no gain is claimed (then prefer another type than `perf`).
+- System-level refactor: Complex. Verified Mermaid diagram, behavior-preservation evidence, hotspots, rollback; title type `refactor`, no behavior claims.
+- Breaking change: Complex. `!` in title when upstream allows, then an affected-users section, migration steps, deprecation/rollback, and the upstream footer (for example `BREAKING CHANGE:`) in English.
+- Multi-PR series: each PR stands alone. State position, predecessor/successor, base branch, merge order, dependency reason, and what is tested without the others. Do not assert later PRs exist unless they do.
+
 For Chinese summary, preserve intent, key changes, validation results, limitations and breaking/risk information. Do not introduce claims absent from English or silently strengthen confidence. Default target about one-quarter to one-third of the English section's information density, not literal word count. Keep issue closing commands in English only. Prefer visible `## 中文摘要`; use collapsible Chinese only if user or upstream prefers and accepts it.
 
 ## 5. Visual evidence rules
@@ -76,7 +90,7 @@ For Chinese summary, preserve intent, key changes, validation results, limitatio
 - Desktop/animation: target relevant FPS/frame-time p50/p95/p99, missed frames, CPU/GPU, working set/private bytes, allocations, and idle/active sampling; document tool, duration, refresh rate and workload. On Windows test applicable DPI/scaling, high contrast, reduced motion, theme changes, multi-monitor, sleep/resume, rapid toggles, resize and sustained use. Only claim combinations tested.
 - ML/research: report datasets/splits, model/checkpoint, seed(s), baseline, metric direction, hardware and uncertainty; chart only measured data; do not imply statistical significance without analysis.
 - Use real GitHub attachments or approved stable URLs accessible to reviewers. Never embed `C:\...`, `/tmp/...`, localhost, or fake URLs in published body. No private tokens or expiring URLs. Check permissions and rendering. Avoid committing media to code diff unless project policy requests it. A fork contributor may not have upload permissions; use an authorized alternative or disclose missing visual evidence.
-- If installed `gh` supports `--attach` and user has required push access, use `--body-file` and `--attach` with Markdown references at their intended positions; verify `gh pr create --help` first. Unreferenced attachments may be appended after the Chinese section, so reference all in English. Otherwise use authorized GitHub web upload or approved stable hosting. Never use private/undocumented upload endpoints.
+- If installed `gh` supports `--attach` and user has required push access, use `--body-file` and `--attach` with Markdown references at their intended positions; verify `gh pr create --help` first. Unreferenced attachments may be appended after the Chinese section, so reference all in English. A local path is acceptable only in the pre-upload body file when it exactly matches an authorized --attach input; after upload verify that the published body contains no local paths. For a video player, the video reference must occupy its own paragraph. If creation reports an attachment error or any ambiguous failure, the PR may already exist: inspect the printed URL and check the remote PR and uploaded assets before retrying; do not create a duplicate. Report partial failures and do not claim successful rendering without verifying it. Otherwise use authorized GitHub web upload or approved stable hosting. Never use private/undocumented upload endpoints.
 
 ## 6. Links, risks and series
 
@@ -94,9 +108,13 @@ Before returning or posting, check:
 5. If evidence missing or tests failed, disclose it and default to draft when publishing is authorized and upstream permits; never claim ready solely because a body was drafted.
 6. User authorization for remote actions. When authorized, use explicit `--repo`, `--base`, `--head`, `--title`, `--body-file` with `gh pr create`; choose `--draft` if warranted. Verify returned PR URL, target/head, actual rendered body, attachment placement and CI status; report any unresolved checks. Do not merge without specific authorization.
 
+AI attribution: if the user, host or upstream requires an AI-disclosure or attribution line (for example a Claude Code or Codex footer), keep it verbatim as the final footer after the Chinese summary, separated by a rule. It is not part of either language body and does not count toward the emoji budget. Never add a disclosure the rules do not ask for, and never remove one they require.
+
+Mechanical check: run `python tools/lint_pr_body.py --title "<title>" <body.md>` from this skill directory (Python 3, standard library only) on every drafted body. It checks title format, Chinese section last and plain, no visuals or tables in the Chinese section, leftover placeholders, local paths, non-http image URLs and basic fence balance. Passing is necessary, not sufficient; the claim-to-evidence review stays manual. Use `--upstream-english-only` when the target forbids Chinese.
+
 ## 8. Deliverables
 
-Use `pull_request_template.md` as an optional scaffold. Remove inactive headings and all placeholders before submission, but never remove upstream-required fields. Return English title, final Markdown body and a separate local-only preflight summary (repo/base/head, evidence inventory, missing evidence, draft/ready recommendation). If no upstream rule allows AI prose, return only permitted notes and human-action requirements. `example.md` is a fictional formatting example, never evidence of actual project behavior.
+Use `pull_request_template.md` as an optional scaffold. Remove inactive headings and all placeholders before submission, but never remove upstream-required fields. When a full draft is requested, return the title and body following upstream language rules, plus an appropriately scoped local-only preflight summary (repo/base/head, evidence inventory, missing evidence, draft/ready recommendation). For review or planning, return the requested findings or plan instead of an unsolicited rewrite. If no upstream rule allows AI prose, return only permitted notes and human-action requirements. `example.md` is a fictional formatting example, never evidence of actual project behavior.
 
 ## 9. Sources and rationale (checked 2026-11-25)
 

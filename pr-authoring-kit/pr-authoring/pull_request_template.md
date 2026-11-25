@@ -54,6 +54,17 @@
 - **Known limitations:** [Observed or untested cases.]
 - **Migration / rollback:** [If relevant, concrete steps and caveats.]
 
+## Breaking Changes & Migration
+
+<!-- Only for breaking changes. Name affected users or APIs, the migration path, deprecation window and rollback. Mirror any upstream-required footer. -->
+
+- **Affected:** [Users, APIs or settings that change.]
+- **Migration:** [Concrete steps.]
+
+## Series / Dependencies
+
+<!-- Only for stacked or multi-PR work: position, predecessor, successor, base branch, merge order, what is tested independently. -->
+
 ## Reviewer Notes
 
 [Review hotspots, intentional trade-offs, dependencies, sequence or open questions.]
