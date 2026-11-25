@@ -138,12 +138,39 @@ class TestDeploy(unittest.TestCase):
         wr(self.doc_lf, rd(self.doc_lf).replace("路由一行".encode(), "改过".encode()))
         self.assertEqual(run("rollback", "--state", self.state).returncode, 1)
 
-    def test_missing_doc_aborts_but_partial_state_allows_rollback(self):
-        self.write_plan(docs=[{"file": os.path.join(self.t.name, "nope.md"), "block_file": self.block}])
+    def test_missing_doc_file_is_created_and_removed_on_rollback(self):
+        nope = os.path.join(self.t.name, "newdir", "nope.md")
+        self.write_plan(docs=[{"file": nope, "block_file": self.block}])
+        self.assertEqual(self.apply().returncode, 0)
+        self.assertIn(b"ewk:begin", rd(nope))
+        self.assertEqual(run("rollback", "--state", self.state).returncode, 0)
+        self.assertFalse(os.path.exists(nope))
+
+    def test_failure_midway_keeps_partial_state_and_rolls_back(self):
+        self.write_plan(docs=[{"file": self.doc_lf, "block_file": os.path.join(self.t.name, "no-such-block.md")}])
         self.assertEqual(self.apply().returncode, 1)
         self.assertEqual(run("rollback", "--state", self.state).returncode, 0)
         for p in self.parents:
             self.assertFalse(os.path.exists(os.path.join(p, "engineering-workflow")))
+
+    def test_replaced_block_rollback_restores_previous_block(self):
+        before = rd(self.doc_lf)
+        stale = before + b"\n<!-- ewk:begin -->\nold block\n<!-- ewk:end -->\n"
+        wr(self.doc_lf, stale)
+        self.assertEqual(self.apply().returncode, 0)
+        self.assertNotIn(b"old block", rd(self.doc_lf))
+        self.assertEqual(run("rollback", "--state", self.state).returncode, 0)
+        self.assertEqual(rd(self.doc_lf), stale)
+
+    def test_failed_swap_keeps_existing_install(self):
+        self.assertEqual(self.apply().returncode, 0)
+        dest = os.path.join(self.parents[0], "engineering-workflow")
+        before = rd(os.path.join(dest, "SKILL.md"))
+        # a plan pointing at a missing source must fail without touching the installed skill
+        self.write_plan(src=os.path.join(self.t.name, "missing-src"))
+        r = run("apply", "--plan", self.plan, "--state", self.state + ".2")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(rd(os.path.join(dest, "SKILL.md")), before)
 
 
 class TestSkillHygiene(unittest.TestCase):

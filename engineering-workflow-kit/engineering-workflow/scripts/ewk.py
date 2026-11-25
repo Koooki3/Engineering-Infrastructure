@@ -7,6 +7,9 @@ Stdlib only, Python >= 3.9, Windows + POSIX. Subcommands:
   guard  mechanical diff checks (protected paths, mojibake, BOM, local paths, secrets)
   route  advisory Fast/Standard/Critical tier from a change set
 
+Evidence binding and consistency checking, not cryptographic attestation: records are plain JSON
+and can be edited by hand. Concurrent agents must each write their own --evidence file.
+
 Exit codes: 0 ok | 1 violation or failed check | 2 usage/evidence unreadable or
 cannot be determined (never a pass) | 124 timeout (run only).
 """
@@ -56,35 +59,40 @@ def state_id(repo, exclude=(), _depth=0):
     h = hashlib.sha256()
     dirty = False
     d = git(repo, "diff", "HEAD", "--binary", "--no-ext-diff", "--ignore-submodules=all")
-    if d is not None and d.stdout:
-        # tracked-file diff; evidence files are untracked by convention, but drop
-        # nothing here: a tracked evidence file edit is a real change.
+    if d is None or d.returncode != 0:
+        return None  # cannot determine state: never bind a PASS to a guess
+    if d.stdout:
         h.update(d.stdout)
         dirty = True
     u = git(repo, "ls-files", "--others", "--exclude-standard", "-z")
-    if u is not None:
-        for raw in sorted(x for x in u.stdout.split(b"\0") if x):
-            rel = raw.decode("utf-8", "replace")
-            if skipped(rel):
-                continue
-            dirty = True
-            h.update(raw)
-            try:
-                with open(os.path.join(root, rel), "rb") as f:
-                    h.update(f.read())
-            except OSError:
-                h.update(b"<unreadable>")
-    sm = git(repo, "submodule", "status", "--recursive")
-    if sm is not None and sm.stdout.strip():
-        for line in sm.stdout.decode("utf-8", "replace").splitlines():
-            h.update(line.encode("utf-8"))
-            parts = line.strip().split()
-            if len(parts) >= 2:
-                sub = os.path.join(root, parts[1])
-                if os.path.isdir(sub):
-                    sid = state_id(sub, exclude, _depth + 1) if _depth < 4 else None
-                    h.update((sid or "-").encode())
-                    dirty = dirty or bool(sid and "+" in sid)
+    if u is None or u.returncode != 0:
+        return None
+    for raw in sorted(x for x in u.stdout.split(b"\0") if x):
+        rel = raw.decode("utf-8", "replace")
+        if skipped(rel):
+            continue
+        dirty = True
+        h.update(raw)
+        try:
+            with open(os.path.join(root, rel), "rb") as f:
+                h.update(f.read())
+        except OSError:
+            return None  # unreadable untracked file: state cannot be fingerprinted
+    st = git(repo, "ls-files", "--stage", "-z")
+    if st is None or st.returncode != 0:
+        return None
+    for ent in st.stdout.split(b"\0"):
+        if not ent.startswith(b"160000"):
+            continue
+        rel = ent.split(b"	", 1)[1].decode("utf-8", "replace")  # NUL-separated: spaces are safe
+        h.update(ent)
+        sub = os.path.join(root, rel)
+        if os.path.isdir(sub):
+            sid = state_id(sub, exclude, _depth + 1) if _depth < 4 else None
+            if sid is None:
+                return None
+            h.update(sid.encode())
+            dirty = dirty or "+" in sid
     return head + ("+" + h.hexdigest()[:12] if dirty else "")
 
 
@@ -218,10 +226,12 @@ def cmd_check(a):
         if st not in STATUSES:
             problems.append(f"{rid}: invalid status {st!r}")
             continue
+        if not isinstance(r.get("id"), str) or not r["id"]:
+            problems.append(f"{rid}: record needs a non-empty string id")
         if st in NOTE_REQUIRED and not str(r.get("note", "")).strip():
             problems.append(f"{rid}: status {st} needs a note explaining why")
         if st == "PASS":
-            if r.get("exit_code") != 0 or not r.get("cmd"):
+            if r.get("exit_code") != 0 or not isinstance(r.get("cmd"), list) or not r.get("cmd"):
                 problems.append(f"{rid}: PASS without cmd and exit_code 0 is not evidence")
             elif r.get("state") is None:
                 if not a.allow_unbound:
@@ -447,6 +457,9 @@ def cmd_route(a):
 
 # ----------------------------------------------------------------------- main
 def main(argv=None):
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")  # same bytes on every console
     ap = argparse.ArgumentParser(prog="ewk", description=__doc__.split("\n")[0])
     sp = ap.add_subparsers(dest="sub", required=True)
     r = sp.add_parser("run", help="run a command, record bound evidence")

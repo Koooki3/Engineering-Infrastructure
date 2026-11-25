@@ -95,6 +95,30 @@ class TestRunCheck(Repo):
         self.write("new.txt", "x\n")
         self.assertEqual(ewk("check", "--evidence", self.ev, "--repo", self.repo).returncode, 1)
 
+    def test_submodule_with_space_in_path_changes_state(self):
+        sub = os.path.join(self.tmp.name, "subsrc")
+        os.mkdir(sub)
+        git(sub, "init", "-q", "-b", "main")
+        with open(os.path.join(sub, "s.txt"), "w") as f:
+            f.write("1\n")
+        git(sub, "add", "-A")
+        git(sub, "commit", "-q", "-m", "s")
+        git(self.repo, "-c", "protocol.file.allow=always", "submodule", "add", "-q", sub, "dir with space")
+        git(self.repo, "commit", "-qam", "add sub")
+        self.run_ok("t1")
+        self.assertEqual(ewk("check", "--evidence", self.ev, "--repo", self.repo).returncode, 0)
+        with open(os.path.join(self.repo, "dir with space", "s.txt"), "w") as f:
+            f.write("changed\n")
+        c = ewk("check", "--evidence", self.ev, "--repo", self.repo)
+        self.assertEqual(c.returncode, 1, c.stdout)
+        self.assertIn("STALE", c.stdout)
+
+    def test_pass_record_with_non_list_cmd_is_not_evidence(self):
+        jdump(self.ev, {"version": 1, "records": [
+            {"id": "x", "status": "PASS", "exit_code": 0, "cmd": "true", "state": None}]})
+        c = ewk("check", "--evidence", self.ev, "--repo", self.repo, "--allow-unbound")
+        self.assertEqual(c.returncode, 1)
+
     def test_evidence_file_inside_repo_does_not_self_invalidate(self):
         ev = os.path.join(self.repo, "ev.json")
         subprocess.run([PY, EWK, "run", "--evidence", ev, "--id", "t", "--repo", self.repo,

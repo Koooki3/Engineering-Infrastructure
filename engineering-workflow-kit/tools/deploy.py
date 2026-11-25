@@ -82,12 +82,17 @@ def find_block(s):
 
 def patch_doc(entry, backups):
     path, block_text = entry["file"], open(entry["block_file"], encoding="utf-8").read()
-    with open(path, "rb") as f:
-        raw = f.read()
+    existed = os.path.exists(path)
+    raw = b""
+    if existed:
+        with open(path, "rb") as f:
+            raw = f.read()
+    else:
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     bom, nl, s = split_doc(raw)
     block = make_block(block_text, nl)
     span = find_block(s)
-    rec = {"file": path, "pre_sha256": sha(raw), "block": block}
+    rec = {"file": path, "pre_sha256": sha(raw), "block": block, "created": not existed}
     if span:
         if _n(s[span[0]:span[1]]) == _n(block):
             rec.update(action="unchanged", post_sha256=sha(raw))
@@ -100,10 +105,11 @@ def patch_doc(entry, backups):
         new = s + rec["inserted"]
         rec["action"] = "appended"
     out = (b"\xef\xbb\xbf" if bom else b"") + new.encode("utf-8")
-    bk = os.path.join(backups, os.path.basename(path) + "." + sha(raw)[:12] + ".bak")
-    with open(bk, "wb") as f:
-        f.write(raw)
-    rec["backup"] = bk
+    if existed:
+        bk = os.path.join(backups, os.path.basename(path) + "." + sha(raw)[:12] + ".bak")
+        with open(bk, "wb") as f:
+            f.write(raw)
+        rec["backup"] = bk
     tmp = path + ".ewk.tmp"
     with open(tmp, "wb") as f:
         f.write(out)
@@ -116,6 +122,8 @@ def unpatch_doc(rec, force):
     path = rec["file"]
     if rec["action"] == "unchanged":
         return "kept (block pre-existed, not ours to remove)"
+    if not os.path.exists(path):
+        return "file already absent"
     with open(path, "rb") as f:
         raw = f.read()
     bom, nl, s = split_doc(raw)
@@ -125,7 +133,26 @@ def unpatch_doc(rec, force):
     if _n(s[span[0]:span[1]]) != _n(rec["block"]) and not force:
         raise RuntimeError(f"{path}: block was edited after deployment; use --force")
     if rec["action"] == "replaced":
-        raise RuntimeError(f"{path}: block pre-existed and was replaced; restore {rec.get('backup')} by hand")
+        if sha(raw) == rec.get("post_sha256") and rec.get("backup") and os.path.exists(rec["backup"]):
+            with open(rec["backup"], "rb") as f:
+                old = f.read()
+            tmp = path + ".ewk.tmp"
+            with open(tmp, "wb") as f:
+                f.write(old)
+            os.replace(tmp, path)
+            return "restored previous block (file restored from backup)"
+        # file has later unrelated edits: swap only the block text back
+        with open(rec["backup"], "rb") as f:
+            _, _, old_s = split_doc(f.read())
+        old_span = find_block(old_s)
+        if not old_span:
+            raise RuntimeError(f"{path}: cannot find previous block in {rec['backup']}; restore by hand")
+        new = s[:span[0]] + old_s[old_span[0]:old_span[1]] + s[span[1]:]
+        tmp = path + ".ewk.tmp"
+        with open(tmp, "wb") as f:
+            f.write((b"\xef\xbb\xbf" if bom else b"") + new.encode("utf-8"))
+        os.replace(tmp, path)
+        return "previous block restored (file has other later edits)"
     ins = rec.get("inserted", "")
     if ins and s.count(ins) == 1:
         new = s.replace(ins, "", 1)
@@ -136,6 +163,9 @@ def unpatch_doc(rec, force):
     with open(tmp, "wb") as f:
         f.write(out)
     os.replace(tmp, path)
+    if rec.get("created") and not out.strip():
+        os.remove(path)
+        return "removed (file was created by deploy)"
     return "restored" if sha(out) == rec["pre_sha256"] else "block removed (file has other later edits)"
 
 
@@ -163,9 +193,20 @@ def install_skill(src, parent, name, version, backups):
         shutil.rmtree(tmp)
     shutil.copytree(src, tmp, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     save(os.path.join(tmp, MANIFEST), {"name": name, "version": version, "files": want})
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
-    os.replace(tmp, dest)
+    old = dest + ".ewk-old"
+    if os.path.exists(old):
+        shutil.rmtree(old)
+    had = os.path.exists(dest)
+    if had:
+        os.replace(dest, old)  # keep the working install until the new one is in place
+    try:
+        os.replace(tmp, dest)
+    except BaseException:
+        if had:
+            os.replace(old, dest)
+        raise
+    if had:
+        shutil.rmtree(old, ignore_errors=True)
     return rec
 
 
@@ -197,6 +238,9 @@ def rollback_skill(rec, force):
 
 # ------------------------------------------------------------------------ main
 def main(argv=None):
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")  # same bytes on every console
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sp = ap.add_subparsers(dest="sub", required=True)
     a_ = sp.add_parser("apply")
@@ -228,7 +272,7 @@ def main(argv=None):
                     rec = patch_doc(d, backups)
                     state["docs"].append(rec)
                     print(f"doc {rec['action']}: {rec['file']}")
-            except Exception:
+            except BaseException:  # includes KeyboardInterrupt
                 save(a.state, state)  # partial state so rollback can undo what was done
                 raise
             save(a.state, state)
