@@ -12,7 +12,7 @@ engineering-workflow/        # 唯一可部署单元（复制到各 skills 目�
   scripts/ewk.py             # run / check / guard / route，stdlib Python ≥3.9
 tools/deploy.py              # 可逆部署：复制安装 + 带标记的指令块；apply / verify / rollback
 deploy/                      # plan.example.json（通用模板）与指令块；真实计划/状态/备份留在本机仓库之外
-tests/                       # 61 项：脚本、部署、skill 卫生（体积/可移植/链接/PR 契约不回退）
+tests/                       # 62 项：脚本、部署、skill 卫生（体积/可移植/链接/PR 契约不回退）
 reports/                     # 已脱敏的证据、决策、验证记录（不含本机路径与部署状态）
 ```
 
@@ -35,11 +35,12 @@ reports/                     # 已脱敏的证据、决策、验证记录（不�
 | Claude Code · WSL | 已部署；`verify` OK；无头触发测试 BLOCKED（登录过期） | 同上 |
 | Codex · Windows / WSL | 已复制到 `~/.agents/skills` 并在 AGENTS.md 加路由块；Codex 自动发现 NOT_RUN（本机 PATH 无 codex CLI，未做 app-server 发现检查） | 同上 |
 | 其他 Agent | 手动：把 `SKILL.md` 内容或路径交给它，脚本独立可用 | — |
-| Python | 3.12（Windows）、3.14（WSL）测试通过；声明 ≥3.9 未在 3.9 实测 | 测试输出 |
+| Python | 3.12（Windows）、3.14（WSL）测试通过；CI 覆盖 3.9 与 3.13（以最新 Actions 结果为准） | 测试输出 |
 
 ## 已知限制
 
 - 状态指纹不覆盖 `.gitignore` 忽略的文件；命令若改动工作树，`run` 会把 PASS 降为 FAIL。
+- deploy 对正常异常和 Ctrl-C 会保存部分状态以便回滚；进程被强杀、断电等不保证可恢复（不做事务日志），此时先 `verify` 再人工检查 `*.ewk-old` / `*.ewk-new` 残留。
 - deploy 遇到目标是符号链接/junction 会拒绝，不会替换。
 - `ewk.py` 的 evidence 是“状态绑定与一致性检查”，不是密码学证明，记录可被手工改写；多个 Agent 并行时各自使用独立的 `--evidence` 文件，工具不做并发写入协调。
 - `route` 只是路径+标志的启发式建议。

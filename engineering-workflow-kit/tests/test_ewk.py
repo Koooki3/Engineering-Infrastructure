@@ -113,6 +113,22 @@ class TestRunCheck(Repo):
         self.assertEqual(c.returncode, 1, c.stdout)
         self.assertIn("STALE", c.stdout)
 
+    def test_git_state_failure_is_not_a_pass_but_non_git_still_works(self):
+        broken = os.path.join(self.tmp.name, "broken")
+        os.mkdir(broken)
+        with open(os.path.join(broken, ".git"), "w") as f:
+            f.write("gitdir: nowhere\n")  # looks like a repo, git cannot read it
+        ev = os.path.join(self.tmp.name, "e2.json")
+        r = ewk("run", "--evidence", ev, "--id", "t", "--repo", broken, "--", PY, "-c", "pass")
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(jload(ev)["records"][0]["status"], "FAIL")
+        plain = os.path.join(self.tmp.name, "plain")
+        os.mkdir(plain)
+        ev2 = os.path.join(self.tmp.name, "e3.json")
+        r = ewk("run", "--evidence", ev2, "--id", "t", "--repo", plain, "--", PY, "-c", "pass")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(jload(ev2)["records"][0]["status"], "PASS")
+
     def test_pass_record_with_non_list_cmd_is_not_evidence(self):
         jdump(self.ev, {"version": 1, "records": [
             {"id": "x", "status": "PASS", "exit_code": 0, "cmd": "true", "state": None}]})

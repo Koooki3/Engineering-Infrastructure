@@ -172,7 +172,7 @@ Only portable source assets should be distributed. Machine-specific plans, deplo
 
 ## Validation and compatibility
 
-The original v1.0.0 validation recorded 56 passing offline tests. After the hardening pass, all 61 offline tests passed locally on Windows (Python 3.12) and WSL Ubuntu (Python 3.14); CI runs them on Ubuntu and Windows (see `.github/workflows/ci.yml`). These are results from specific environments, not a guarantee for every installation.
+The original v1.0.0 validation recorded 56 passing offline tests. After the hardening pass, all 62 offline tests passed locally on Windows (Python 3.12) and WSL Ubuntu (Python 3.14); CI runs them on Ubuntu and Windows (see `.github/workflows/ci.yml`). These are results from specific environments, not a guarantee for every installation.
 
 | Environment | Recorded status |
 | --- | --- |
@@ -180,7 +180,7 @@ The original v1.0.0 validation recorded 56 passing offline tests. After the hard
 | Claude Code on WSL | Installed and verified; headless trigger test blocked |
 | Codex on Windows / WSL | Files deployed; actual discovery and invocation not verified |
 | Other agents / operating systems | Adaptation required; not validated |
-| Python 3.9+ | Declared minimum; Python 3.9 itself not tested in the recorded report |
+| Python 3.9+ | Declared minimum; exercised by CI (see the latest Actions run) |
 
 To run the workflow kit's offline tests:
 

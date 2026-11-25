@@ -109,7 +109,7 @@ python -I -B engineering-workflow-kit/tools/deploy.py rollback --state ~/.ewk/de
 
 ## 验证与兼容性
 
-v1.0.0 的原始验证记录为 56 项离线测试通过。加固后，全部 61 项离线测试已在本机 Windows（Python 3.12）和 WSL Ubuntu（Python 3.14）通过；CI 在 Ubuntu 和 Windows 上运行（见 `.github/workflows/ci.yml`）。这些是特定环境的结果，不代表所有安装均已验证。
+v1.0.0 的原始验证记录为 56 项离线测试通过。加固后，全部 62 项离线测试已在本机 Windows（Python 3.12）和 WSL Ubuntu（Python 3.14）通过；CI 在 Ubuntu 和 Windows 上运行（见 `.github/workflows/ci.yml`）。这些是特定环境的结果，不代表所有安装均已验证。
 
 | 环境 | 已记录的状态 |
 | --- | --- |
@@ -117,7 +117,7 @@ v1.0.0 的原始验证记录为 56 项离线测试通过。加固后，全部 61
 | WSL Claude Code | 已部署并通过完整性验证，无头触发测试受阻 |
 | Windows / WSL Codex | 已部署文件，实际发现及调用尚未验证 |
 | 其他 Agent / 操作系统 | 需要适配，尚未验证 |
-| Python 3.9+ | 声明支持的最低版本，3.9 本身尚未实测 |
+| Python 3.9+ | 声明支持的最低版本，由 CI 覆盖（以最新 Actions 结果为准） |
 
 执行离线测试：
 

@@ -39,7 +39,22 @@ def git(repo, *args):
 
 
 def _norm(p):
-    return os.path.normcase(os.path.abspath(p))
+    return os.path.normcase(os.path.realpath(p))
+
+
+def in_git_repo(repo):
+    """True if repo is inside a git work tree, or git is unusable but a .git exists above it."""
+    r = git(repo, "rev-parse", "--is-inside-work-tree")
+    if r is not None and r.returncode == 0:
+        return True
+    d = os.path.abspath(repo)
+    while True:
+        if os.path.exists(os.path.join(d, ".git")):
+            return True  # a git repo whose state git cannot report: not the same as "no git"
+        parent = os.path.dirname(d)
+        if parent == d:
+            return False
+        d = parent
 
 
 def state_id(repo, exclude=(), _depth=0):
@@ -148,6 +163,7 @@ def cmd_run(a):
     if any(r.get("id") == a.id for r in data["records"]):
         print(f"ewk run: id '{a.id}' already recorded; use a new id", file=sys.stderr)
         return 2
+    is_git = in_git_repo(repo)
     before = state_id(repo, [ev_path])
     started = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     t0 = time.monotonic()
@@ -177,7 +193,11 @@ def cmd_run(a):
             note = (note + " " if note else "") + f"timeout after {a.timeout}s; process tree killed"
         tail = out.decode("utf-8", "replace")[-TAIL_CHARS:]
     after = state_id(repo, [ev_path])
-    if status == "PASS" and before != after:
+    if status == "PASS" and is_git and (before is None or after is None):
+        status = "FAIL"
+        note = (note + " " if note else "") + "git state could not be determined; refusing to record PASS"
+        code = code or 1
+    elif status == "PASS" and before != after:
         status = "FAIL"
         note = (note + " " if note else "") + (
             "command changed the working tree, so this PASS does not describe the resulting state; "
