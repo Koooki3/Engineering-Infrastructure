@@ -11,9 +11,9 @@ engineering-workflow/        # 唯一可部署单元（复制到各 skills 目�
   templates/                 # task-card、delivery（仅两个）
   scripts/ewk.py             # run / check / guard / route，stdlib Python ≥3.9
 tools/deploy.py              # 可逆部署：复制安装 + 带标记的指令块；apply / verify / rollback
-deploy/                      # 本机部署计划与指令块（本机专用，迁移时不带）
-tests/                       # 56 项：脚本、部署、skill 卫生（体积/可移植/链接/PR 契约不回退）
-reports/                     # 本机证据、决策、验证与部署记录（本机专用，迁移前脱敏）
+deploy/                      # plan.example.json（通用模板）与指令块；真实计划/状态/备份留在本机仓库之外
+tests/                       # 61 项：脚本、部署、skill 卫生（体积/可移植/链接/PR 契约不回退）
+reports/                     # 已脱敏的证据、决策、验证记录（不含本机路径与部署状态）
 ```
 
 ## 使用
@@ -23,8 +23,9 @@ reports/                     # 本机证据、决策、验证与部署记录（�
 - 证据：`ewk.py run --evidence E.json --id unit -- <命令>`，交付前 `ewk.py check --evidence E.json --require unit`。代码一改旧 PASS 即 STALE。
 - 机械检查：`ewk.py guard --base <基线>`（或 `--worktree-only`）；项目配置放仓库根 `.ewk.json`：`{"protected_paths":[],"local_path_re":"","bases":[]}`。
 - 扩展领域：在 `references/verification.md` 的领域表加一行，只写已被本机项目验证的能力；项目专属命令和不变量留在项目自己的 AGENTS.md / 脚本。
+- 部署：复制 `deploy/plan.example.json` 到仓库之外（如 `~/.ewk/plan.json`），把 `<ABS_PATH_TO>`、`<HOME>` 换成本机真实绝对路径（Windows 与 WSL 各用各自环境的路径与原生 Python）；先 `deploy.py apply --plan <plan> --state <state>`，状态文件与备份目录同样放在仓库之外（如 `~/.ewk/deployments/`），再 `verify`。目标指令文件不存在时会被创建，回滚时删除。
 - 升级：改源目录 → `python -m unittest discover -s tests` → `deploy.py apply`（用新的 `--state` 文件）→ `verify`。
-- 恢复：`deploy.py rollback --state <state.json>`；多次 apply 按相反顺序逐个回滚。详见 `reports/validation-and-deployment.md`。
+- 恢复：`deploy.py rollback --state <state.json>`；多次 apply 按相反顺序逐个回滚。`state` 已在 `.gitignore` 中排除；验证记录见 `reports/validation-and-deployment.md`。
 
 ## 兼容矩阵
 
@@ -40,5 +41,6 @@ reports/                     # 本机证据、决策、验证与部署记录（�
 
 - 状态指纹不覆盖 `.gitignore` 忽略的文件；命令若改动工作树，`run` 会把 PASS 降为 FAIL。
 - deploy 遇到目标是符号链接/junction 会拒绝，不会替换。
+- `ewk.py` 的 evidence 是“状态绑定与一致性检查”，不是密码学证明，记录可被手工改写；多个 Agent 并行时各自使用独立的 `--evidence` 文件，工具不做并发写入协调。
 - `route` 只是路径+标志的启发式建议。
 - 本 kit 没有测量过“用它是否让任务更快/缺陷更少”：只有部署与行为层面的离线证据，见报告。

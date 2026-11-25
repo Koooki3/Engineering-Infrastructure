@@ -1,6 +1,6 @@
 # 证据索引、追溯矩阵与决策表
 
-本机 BrimDeck 项目记忆（`~/.claude/projects/<project>/memory/`，40+ 条，按相关性抽样 9 条）是唯一有返工案例的项目；其他类型（Web/ML/服务端）只有目录存在，未做深读，故对应领域规则不晋升。字段：场景 / 事实 / 机制 / 收益代价 / 适用·不适用 / 状态 / 去向。
+本机 BrimDeck 项目记忆（`<HOME>`，40+ 条，按相关性抽样 9 条）是唯一有返工案例的项目；其他类型（Web/ML/服务端）只有目录存在，未做深读，故对应领域规则不晋升。字段：场景 / 事实 / 机制 / 收益代价 / 适用·不适用 / 状态 / 去向。
 
 ## 发现与追溯（Fxx ↔ skill/lessons 的 Lxx）
 
@@ -64,4 +64,4 @@
 
 ## 与 pr-authoring 的接口
 
-只在 Deliver 阶段单向交接：本 skill 负责产出“变更清单+证据”，PR 标题/双语正文/附件/授权全部由 `pr-authoring` 与目标仓库规则决定。测试 `test_pr_interface_delegates_not_copies` 防止把其规则（中文摘要、Conventional Commits、`--attach`）复制进本 skill。`pr-authoring` 的目录、junction/symlink 与内容在本轮未被改动（部署后其链接仍指向 `/mnt/d/codex/skills/pr-authoring`）。
+只在 Deliver 阶段单向交接：本 skill 负责产出“变更清单+证据”，PR 标题/双语正文/附件/授权全部由 `pr-authoring` 与目标仓库规则决定。测试 `test_pr_interface_delegates_not_copies` 防止把其规则（中文摘要、Conventional Commits、`--attach`）复制进本 skill。`pr-authoring` 的目录、junction/symlink 与内容在本轮未被改动（部署后其链接仍指向 `<skills>/pr-authoring`）。

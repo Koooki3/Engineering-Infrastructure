@@ -1,0 +1,13 @@
+{
+  "skill_name": "engineering-workflow",
+  "version": "1.0.0",
+  "src": "<ABS_PATH_TO>/engineering-workflow-kit/engineering-workflow",
+  "skills": [
+    "<HOME>/.claude/skills",
+    "<HOME>/.agents/skills"
+  ],
+  "docs": [
+    {"file": "<HOME>/.claude/CLAUDE.md", "block_file": "<ABS_PATH_TO>/engineering-workflow-kit/deploy/block-claude.md"},
+    {"file": "<HOME>/.codex/AGENTS.md", "block_file": "<ABS_PATH_TO>/engineering-workflow-kit/deploy/block-codex.md"}
+  ]
+}

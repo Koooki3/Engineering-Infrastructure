@@ -6,11 +6,11 @@
 |---|---|---|---|---|
 | R01 | Claude 全局规则段“工程约束优先” | Windows/WSL `CLAUDE.md`（两份 SHA-256 一致 `08f6ad0f…`，部署前） | DEPLOYED | 7 条原则，约 1.9 KB 常驻上下文；含外部数字边界说明。行为收益从未测量（上轮自己的 deployment.md 也这么写）。 |
 | R02 | `constraint-ladder` skill + `guard.sh` + `paradigm_guard.sh` | 两侧 `~/.claude/skills/constraint-ladder` | DEPLOYED / PARTIAL | `guard.sh` 依赖 bash+git，Windows 需 Git Bash；配置是 bash 语法 `.guard.conf`；Codex 侧没有该 skill。 |
-| R03 | Codex 手册 `engineering-verification.md` | `D:\codex\management\agent-workflows\` | DEPLOYED | Codex 两侧 AGENTS.md 按需指向它；Claude 侧不引用。→ 同一思想两处分叉。 |
+| R03 | Codex 手册 `engineering-verification.md` | `<local path>` | DEPLOYED | Codex 两侧 AGENTS.md 按需指向它；Claude 侧不引用。→ 同一思想两处分叉。 |
 | R04 | Codex AGENTS.md “任务范围、工程验证与交付”“跨会话上下文”段 | Windows 3.8 KB / WSL | DEPLOYED | 上轮精简后：Windows 5,886→3,153 B。Windows 与 WSL 的 AGENTS.md 本来就不同（Team Mode、D 盘约定 vs 研究库、work-handoff）。 |
-| R05 | BrimDeck `pr-plan/tools/guard.sh` + `.git/hooks/pre-push`→`pre-push.sh` | D:\BrimDeck-main | DEPLOYED（试点） | 覆盖 releases/、U+FFFD、含中文 .ps1 缺 BOM、新增行本地路径；取证失败退出 2。pre-push 在 git common dir，不进提交。 |
+| R05 | BrimDeck `pr-plan/tools/guard.sh` + `.git/hooks/pre-push`→`pre-push.sh` | <project> | DEPLOYED（试点） | 覆盖 releases/、U+FFFD、含中文 .ps1 缺 BOM、新增行本地路径；取证失败退出 2。pre-push 在 git common dir，不进提交。 |
 | R06 | BrimDeck 衍生工具：`wait-for.sh`、`no-open-wait.py`（PreToolUse hook）、`leftovers.ps1`、`deploy-gate.tests.ps1`、`workflow-shell.tests.sh` | `pr-plan/tools/` | DEPLOYED | 是纠正阶梯第 2 步的实际成功案例；`no-open-wait` 看不到脚本文件内部的循环（记忆里自述）。 |
-| R07 | 上轮部署/回退脚本 | `D:\codex\2026-11-15\…\work\deploy.py, refine.py` | DEPLOYED（工作目录） | 回退按原始字节恢复；文件后续被改会停止。本轮 deploy 改为“只移除标记块”，保留后续无关编辑。 |
+| R07 | 上轮部署/回退脚本 | `<local path> refine.py` | DEPLOYED（工作目录） | 回退按原始字节恢复；文件后续被改会停止。本轮 deploy 改为“只移除标记块”，保留后续无关编辑。 |
 
 ## 现状问题（本轮发现）
 

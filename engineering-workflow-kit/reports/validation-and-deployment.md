@@ -37,17 +37,15 @@
 - 未改动：pr-authoring 的链接、constraint-ladder、work-handoff、任何 hook/权限/插件/MCP、BrimDeck 及其他真实仓库。未推送、未开 PR、未联网、未装远程依赖。
 - 生效证据：本会话中途 Windows 侧 skill 清单已出现 `engineering-workflow` 及其描述（自动发现生效）；`deploy.py verify` 两侧 OK。
 
-状态文件（`reports/deployments/`）：Windows `state-windows.json`（首装）→ `-2`（部分，仅 `.claude` 更新，因上述备份冲突失败）→ `-3`（`.agents` 更新）；WSL `state-wsl.json` → `-2`。
+状态文件与备份保存在本机仓库之外（原路径已迁出，不随仓库分发）：Windows 三次 apply 的状态依次为 `state-windows` → `-2`（部分，仅 `.claude` 更新，因上述备份冲突失败）→ `-3`（`.agents` 更新）；WSL 为 `state-wsl` → `-2`。
 
 ## 5. 回滚（按相反顺序，各环境用各自 Python）
 
-```powershell
-cd D:\桌面\engineering-workflow-kit
-python -I -B tools\deploy.py rollback --state reports\deployments\state-windows-3.json
-python -I -B tools\deploy.py rollback --state reports\deployments\state-windows-2.json
-python -I -B tools\deploy.py rollback --state reports\deployments\state-windows.json
-wsl.exe -d Ubuntu-26.04 -- python3 -I -B "/mnt/d/桌面/engineering-workflow-kit/tools/deploy.py" rollback --state "/mnt/d/桌面/engineering-workflow-kit/reports/deployments/state-wsl-2.json"
-wsl.exe -d Ubuntu-26.04 -- python3 -I -B "/mnt/d/桌面/engineering-workflow-kit/tools/deploy.py" rollback --state "/mnt/d/桌面/engineering-workflow-kit/reports/deployments/state-wsl.json"
+```text
+python -I -B <KIT>/tools/deploy.py rollback --state <STATE_DIR>/state-windows-3.json
+python -I -B <KIT>/tools/deploy.py rollback --state <STATE_DIR>/state-windows-2.json
+python -I -B <KIT>/tools/deploy.py rollback --state <STATE_DIR>/state-windows.json
+# WSL：用 WSL 内的 python3 与 /mnt/... 形式的路径，顺序 state-wsl-2 → state-wsl
 ```
 
 回滚前自动核对安装目录哈希，被手改则拒绝（`--force` 覆盖）；指令块若被手改也拒绝；块之外的后续编辑保留。回滚已在临时目录对真实内容演练通过；对当前真实部署未执行（执行即撤销部署）。

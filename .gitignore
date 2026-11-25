@@ -1,0 +1,14 @@
+# Machine-local deployment plans, state and backups must never be committed.
+/engineering-workflow-kit/deploy/plan.json
+/engineering-workflow-kit/deploy/plan-*.json
+/engineering-workflow-kit/reports/deployments/
+*.backups/
+state-*.json
+*.ewk.tmp
+*.ewk-new
+*.ewk-old
+.ewk/
+.claude/
+__pycache__/
+*.pyc
+evidence*.json
