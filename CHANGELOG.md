@@ -1,5 +1,12 @@
 # Changelog
 
+## Operational reliability
+
+- Honor project Git hooks and revalidate changed build inputs even when the candidate commit is unchanged.
+- Discover project deployment entrypoints and register reviewed contracts against a clean integration candidate.
+- Check applicable delivery conditions, resume with existing checkpoints and propose verified lessons for review.
+- Pin root-level oil-ui and oil-motion review bundles to their publishers.
+
 ## Project lifecycle and portable references
 
 - Inspect Git topology and reconcile selected upstream and downstream changes in owned detached worktrees.

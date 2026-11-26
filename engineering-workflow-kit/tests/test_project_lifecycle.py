@@ -184,6 +184,58 @@ class ProjectLifecycle(unittest.TestCase):
         (self.root / 'installed.json').write_text('{}')
         self.cli('runtime', blocked=True)
 
+    def test_same_commit_reconciles_pins_and_revalidates_changed_adapter(self):
+        self.setup_contract()
+        self.prepare('original')
+        first = self.cli('deploy', 'original')
+        self.git('branch', 'alternate', self.base)
+        self.prepare('renamed-input', base='refs/heads/alternate')
+        self.assertEqual(self.cli('deploy', 'renamed-input')['pins'], {'refs/heads/alternate': self.base})
+        with (self.root / 'adapter.py').open('a') as script:
+            script.write('\n# reviewed adapter revision\n')
+        self.prepare('changed-input', base='refs/heads/alternate')
+        (self.root / 'fail-test').touch()
+        self.cli('deploy', 'changed-input', blocked=True)
+        self.assertEqual(json.loads((self.state / 'stable.json').read_bytes())['sha256'], first['sha256'])
+        (self.root / 'fail-test').unlink()
+        self.prepare('retry-input', base='refs/heads/alternate')
+        refreshed = self.cli('deploy', 'retry-input')
+        self.assertEqual(first['sha256'], refreshed['sha256'])
+        self.assertNotEqual(first['build_inputs'], refreshed['build_inputs'])
+        self.assertNotEqual(refreshed['previous']['record_id'], refreshed['record_id'])
+
+    def test_git_mutations_preserve_project_hooks(self):
+        self.git('switch', '-c', 'target')
+        self.write('next', 'advance')
+        target = self.add('advance')
+        self.git('switch', 'main')
+        hooks = self.repo / '.git/hooks'
+        hook = hooks / 'reference-transaction'
+        hook.write_bytes(b'#!/bin/sh\nif [ "$1" = prepared ]; then exit 1; fi\n')
+        hook.chmod(0o755)
+        self.cli('fast-forward', '--expected', self.base, '--target', target, blocked=True)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), self.base)
+
+    def test_contract_preview_and_delivery_gate(self):
+        self.write('pyproject.toml', '# tracked build entry')
+        base = self.add('native tool metadata')
+        self.prepare('reviewed')
+        self.setup_contract()
+        proposed = self.root / 'proposal.json'
+        (self.state / 'contract.json').replace(proposed)
+        self.assertIn('pyproject.toml', self.cli('contract')['tracked_entrypoints'])
+        args = ('contract', '--task', 'reviewed', '--from-json', str(proposed))
+        self.assertEqual(self.cli(*args)['status'], 'PREVIEW')
+        self.assertFalse((self.state / 'contract.json').exists())
+        self.assertEqual(self.cli(*args, '--apply')['status'], 'CONFIGURED')
+        self.cli('gate', '--task', 'reviewed', '--runtime', blocked=True)
+        self.cli('deploy', 'reviewed')
+        self.assertEqual(self.cli('gate', '--base', base, '--task', 'reviewed', '--runtime')['status'], 'PASS')
+        self.cli('gate', '--task', 'reviewed', '--close', blocked=True)
+        (self.root / 'reviewed/artifact.json').unlink()
+        self.cli('cleanup', 'reviewed', '--released', '--apply')
+        self.assertEqual(self.cli('gate', '--task', 'reviewed', '--close')['checks']['worktree'], 'PASS')
+
     def test_released_owned_cleanup_archives_and_leaves_stash(self):
         self.prepare('clean')
         tree = self.root / 'clean'
@@ -222,5 +274,8 @@ class ProjectLifecycle(unittest.TestCase):
                        check=True, capture_output=True, cwd=self.repo, timeout=30)
         self.assertEqual(self.cli('knowledge', 'lesson', '--evidence', str(evidence),
                                   '--require', 'verified')['status'], 'VERIFIED')
+        proposal = self.cli('promotion-plan', 'lesson', '--summary', 'Verify inputs before reuse.')
+        self.assertEqual(proposal['status'], 'REVIEW_REQUIRED')
+        self.assertNotIn('evidence', proposal)
         self.assertEqual(self.cli('knowledge', 'lesson', '--archive')['status'], 'ARCHIVED')
         self.assertEqual(self.git('status', '--porcelain'), '')

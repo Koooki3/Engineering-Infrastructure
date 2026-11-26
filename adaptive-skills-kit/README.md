@@ -9,6 +9,8 @@ Use the [global bootstrap](../BOOTSTRAP.md) for installation. Examples use `pyth
 - `stage ID --repo OWNER/REPO --commit FULL_SHA --skill-path skills/ID --license-path LICENSE` stages exact Markdown and license bytes outside discovery. `--local DIRECTORY` supports a reviewed local fixture or mirror with the same pinned provenance. The resolver deliberately does not execute candidate text.
 - `stage-reference ID` uses catalog pins directly, verifies each file and reuses the exact isolated snapshot. A Markdown reference accepts `--activate` only when the matching scoped approval is already present. Review-only bundles, including scripts and Agent manifests, stay inert for inspection and independent authorized evaluation. Pinned upstream files may differ from local adaptations.
 
+The oil-ui and oil-motion pins stage runtime instructions and assets for review. The exact publisher revision also contains upstream demos and test material. Keep privately maintained design routing skills under their existing ownership. If their owner approves private migration, copy the reviewed source into an isolated directory on the destination, compare hashes, and verify discovery before using it. Public distribution requires separate provenance and license evidence.
+
 Use [the evaluation guide](adaptive-skills/references/evaluation.md) to compare 2–5 relevant candidates as available. Compare against current tooling on positive, negative, near-miss and overlapping tasks before voting for a change.
 
 ## Permission policy

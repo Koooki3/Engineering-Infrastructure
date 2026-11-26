@@ -152,7 +152,9 @@ def stage_reference(args, root, source, state, settings):
         raise ValueError('No eligible portable bundle pin for this reference')
     if args.activate and (pin['lane'] != 'markdown' or settings['mode'] != 'TRUSTED_AUTO'):
         raise ValueError('Reference activation requires a Markdown pin and TRUSTED_AUTO')
-    source_url = f"{row['source']}/tree/{pin['commit']}/{row['source_path']}"
+    source_url = f"{row['source']}/tree/{pin['commit']}"
+    if row['source_path'] != '.':
+        source_url += '/' + row['source_path']
     sha = digest(encode({name: item['sha256'] for name, item in pin['files'].items()}))
     receipt = {'id': args.id, 'sha256': sha, 'source': source_url, 'state': 'STAGED',
                'transport': 'pinned-reference', 'lane': pin['lane'],

@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 
 sys.dont_write_bytecode = True
 from ewk import kill_tree, state_id
@@ -39,14 +40,14 @@ def command(cwd, args, timeout=60, env=None, allowed=(0,)):
             raise ValueError(f'Command timed out: {Path(args[0]).name}')
         if proc.returncode not in allowed:
             # Project output may contain credentials or private data. Keep errors brief.
-            action = args[3] if args[0] == 'git' else 'project command'
+            action = args[1] if args[0] == 'git' else 'project command'
             raise ValueError(f'{Path(args[0]).name} exited {proc.returncode}: {action}')
         return out
 
 
 def git(cwd, *args, timeout=60):
     env = dict(os.environ, GIT_TERMINAL_PROMPT='0', GIT_OPTIONAL_LOCKS='0')
-    return command(cwd, ['git', '-c', 'core.hooksPath=' + os.devnull, *args], timeout, env)
+    return command(cwd, ['git', *args], timeout, env)
 
 
 def string(data):
@@ -147,6 +148,8 @@ def topology(cwd, state, event):
                                                      'Cargo.toml', 'go.mod', 'CMakeLists.txt', 'tools/setup.py')
                                    if (cwd / name).is_file()],
             'native_contract': (state / 'contract.json').is_file(), 'deployment_pending': (state / 'pending.json').exists(),
+            'checkpoints': sorted(item.stem for item in (state / 'checkpoints').glob('*.json'))[:10]
+            if event == 'resume' else [],
             'next': {'start': 'establish_baseline', 'resume': 'restore_checkpoint',
                      'integrate': 'refresh_relevant_remotes_then_plan', 'deploy': 'verify_candidate_then_probe',
                      'deliver': 'check_upstream_and_pr_boundary', 'close': 'review_owned_cleanup_and_handoff',
@@ -292,13 +295,17 @@ def digest(path):
 
 
 def project_contract(state):
-    path = state / 'contract.json'
-    no_links(path)
-    contract = mapping(path)
+    contract = mapping(state / 'contract.json')
     if contract is None:
         return None
+    return validate_contract(contract)
+
+
+def validate_contract(contract):
     expected = {'schema', 'build', 'test', 'install', 'probe', 'stop', 'artifact'}
-    if not isinstance(contract, dict) or (set(contract) - expected - {'timeout'}) or not expected.issubset(contract):
+    if (not isinstance(contract, dict) or
+            (set(contract) - expected - {'timeout', 'verification_files', 'verification_env'}) or
+            not expected.issubset(contract)):
         raise ValueError('Invalid local deployment contract')
     if contract['schema'] != 1:
         raise ValueError('Unsupported deployment contract')
@@ -311,7 +318,45 @@ def project_contract(state):
     path = Path(contract['artifact'])
     if path.is_absolute() or path.drive or not path.parts or '..' in path.parts or ':' in contract['artifact']:
         raise ValueError('Artifact path must be relative to the candidate worktree')
+    for key in ('verification_files', 'verification_env'):
+        values = contract.get(key, [])
+        if not isinstance(values, list) or any(not isinstance(value, str) or not value.strip() for value in values):
+            raise ValueError(f'Expected a list of nonempty values in {key}')
+    timeout = contract.get('timeout', 120)
+    if type(timeout) is not int or not 1 <= timeout <= 3600:
+        raise ValueError('Invalid contract timeout')
     return contract
+
+
+def discover_contract(cwd, state):
+    paths = string(git(cwd, 'ls-files', '--', 'README*', 'AGENTS.md', 'pyproject.toml', 'package.json',
+                       'Makefile', 'justfile', 'CMakeLists.txt', '.github/workflows', 'scripts', 'tools')).splitlines()
+    evidence = [name for name in paths if
+                name.startswith(('README', '.github/workflows/')) or '/' not in name
+                or re.search(r'build|test|release|install|deploy|health|probe|stop', name, re.I)]
+    return {'status': 'CONFIGURED' if project_contract(state) else 'DISCOVERY',
+            'tracked_entrypoints': evidence[:40],
+            'required': ['artifact', 'build', 'test', 'install', 'probe', 'stop'],
+            'next': 'Inspect tracked entrypoints and review the actual target, native argv and rollback.'}
+
+
+def register_contract(cwd, state, task, source, apply):
+    contract = validate_contract(mapping(source))
+    existing = project_contract(state)
+    if existing and existing != contract:
+        raise ValueError('An existing native deployment contract needs explicit reconciliation')
+    if (state / 'pending.json').exists():
+        raise ValueError('Recover the pending deployment first')
+    tree, sha = owned_tree(cwd, task)
+    validate_pins(cwd, task)
+    if status(tree):
+        raise ValueError('Review the contract against a clean integration candidate')
+    inputs = verification_inputs(tree, contract, submodule_status(tree))
+    if apply and not existing:
+        probe(contract, tree)
+        save(state / 'contract.json', contract)
+    return {'status': 'CONFIGURED' if existing or apply else 'PREVIEW',
+            'candidate_sha': sha, 'verification_inputs': inputs}
 
 
 def execute(contract, stage, cwd, receipt=None):
@@ -382,7 +427,28 @@ def contract_signature(contract):
     return hashlib.sha256(json.dumps(contract, sort_keys=True).encode()).hexdigest()
 
 
+def verification_inputs(cwd, contract, submodules):
+    paths = {Path(item) for item in contract.get('verification_files', [])}
+    for stage in ('build', 'test', 'install', 'probe', 'stop'):
+        argv = contract[stage]
+        paths.add(Path(argv[0]))
+        for token in argv[1:]:
+            path = Path(token)
+            if Path(path).suffix.lower() in {'.py', '.ps1', '.sh', '.js', '.mjs', '.bat', '.cmd'}:
+                if (cwd / path).is_file():
+                    paths.add(path)
+    facts = {'files': {str(path): digest((cwd / path).resolve(strict=True)) for path in paths},
+             'env': {key: os.environ.get(key) for key in contract.get('verification_env', [])},
+             'git': string(git(cwd, '--version')), 'python': sys.version, 'submodules': submodules,
+             'contract': contract_signature(contract)}
+    return contract_signature(facts)
+
+
 def version_record(state, receipt):
+    if 'record_id' in receipt:
+        if not re.fullmatch(r'[a-f0-9]{32}', receipt['record_id']):
+            raise ValueError('Malformed deployment record identity')
+        return state / 'versions' / (receipt['record_id'] + '.json')
     if not re.fullmatch(r'(?:[a-f0-9]{40}|[a-f0-9]{64})', receipt['sha']) or not re.fullmatch(r'[a-f0-9]{64}', receipt['sha256']):
         raise ValueError('Malformed deployment version identity')
     return state / 'versions' / (receipt['sha'] + '-' + receipt['sha256'] + '.json')
@@ -428,28 +494,38 @@ def deploy(cwd, state, task):
             raise ValueError('Existing deployment contract changed; reconcile it explicitly')
         verify_stored_artifact(state, stable)
     observed = probe(contract, tree, stable)
-    if stable and stable['sha'] == sha:
-        return {'status': 'VERIFIED', **stable, 'observed': observed, **freshness(cwd, stable)}
     artifact = tree / contract['artifact']
     no_links(artifact)
+    submodules = submodule_status(tree)
+    before = state_id(str(tree), exclude=(str(artifact),))
+    if any(line[:1] in {'-', '+', 'U'} for line in submodules) or before != sha:
+        raise ValueError('Initialize the pinned submodules and use a clean candidate')
+    inputs = verification_inputs(tree, contract, submodules)
+    if stable and stable['sha'] == sha and stable.get('build_inputs') == inputs:
+        validate_pins(cwd, task)
+        action = 'REUSED'
+        if stable.get('pins') != task['pins']:
+            stable = {**stable, 'pins': task['pins'], 'record_id': uuid.uuid4().hex,
+                      'reconciled_utc_epoch': time.time(), 'observed': observed}
+            save(version_record(state, stable), stable)
+            save(stable_path, stable)
+            action = 'RECONCILED'
+        return {'status': 'VERIFIED', 'action': action, **stable, 'observed': observed, **freshness(cwd, stable)}
     if artifact.exists():
         raise ValueError('Use a fresh artifact path or a fresh integration worktree')
-    submodules = submodule_status(tree)
-    if any(line[:1] in {'-', '+', 'U'} for line in submodules) or status(tree):
-        raise ValueError('Initialize the pinned submodules and use a clean candidate')
-    before = state_id(str(tree), exclude=(str(artifact),))
-    if before is None:
-        raise ValueError('Cannot bind verification to repository state')
     execute(contract, 'build', tree)
     checksum = digest(artifact)
     execute(contract, 'test', tree)
-    if checksum != digest(artifact) or state_id(str(tree), exclude=(str(artifact),)) != before:
+    if (checksum != digest(artifact) or state_id(str(tree), exclude=(str(artifact),)) != before
+            or verification_inputs(tree, contract, submodule_status(tree)) != inputs):
         raise ValueError('Candidate or artifact drifted during verification')
     validate_pins(cwd, task)
     receipt = {'sha': sha, 'artifact': store_artifact(state, artifact, checksum), 'sha256': checksum, 'pins': task['pins'],
                'verified_state': before, 'submodules': submodules, 'git': string(git(tree, '--version')),
                'python': sys.version.split()[0], 'utc_epoch': time.time(), 'contract_signature': contract_signature(contract),
-               'previous': {key: stable[key] for key in ('sha', 'sha256')} if stable else None}
+               'record_id': uuid.uuid4().hex, 'build_inputs': inputs,
+               'previous': {key: stable[key] for key in ('sha', 'sha256', 'record_id') if key in stable}
+               if stable else None}
     save(pending_path, {'schema': 1, 'stable': stable, 'candidate': receipt, 'contract': contract, 'cwd': str(tree)})
     try:
         execute(contract, 'install', tree, receipt)
@@ -457,8 +533,9 @@ def deploy(cwd, state, task):
         validate_pins(cwd, task)
         if state_id(str(tree), exclude=(str(artifact),)) != before:
             raise ValueError('Candidate changed during installation')
-        if digest(Path(receipt['artifact'])) != checksum:
-            raise ValueError('Deployed artifact drift')
+        if (digest(Path(receipt['artifact'])) != checksum
+                or verification_inputs(tree, contract, submodule_status(tree)) != inputs):
+            raise ValueError('Deployment artifact or verification inputs drifted')
         receipt['observed'] = observed
         save(version_record(state, receipt), receipt)
         save(stable_path, receipt)
@@ -547,12 +624,93 @@ def knowledge(cwd, state, key, source, archive, evidence, require):
     return result
 
 
+def delivery_gate(cwd, state, args, task):
+    checks = dict.fromkeys(('baseline', 'inputs', 'runtime', 'worktree', 'lesson'), 'NOT_APPLICABLE')
+    tree = None
+    if args.base:
+        try:
+            git(cwd, 'merge-base', '--is-ancestor', commit(cwd, args.base), 'HEAD')
+            checks['baseline'] = 'PASS'
+        except ValueError:
+            checks['baseline'] = 'BLOCKED'
+    if task:
+        try:
+            validate_pins(cwd, task)
+            accounted = set(task['skipped']) | {item['source_sha'] for item in task['applied']}
+            complete = all(set(item['commits']) <= accounted for item in task['sources'])
+            if task['phase'] == 'READY':
+                tree, sha = owned_tree(cwd, task)
+                contract = project_contract(state)
+                allowed_output = (str(tree / contract['artifact']),) if contract else ()
+                complete = complete and state_id(str(tree), exclude=allowed_output) == sha
+            checks['inputs'] = 'PASS' if complete and task['phase'] in {'READY', 'ARCHIVED'} else 'BLOCKED'
+        except (KeyError, ValueError):
+            checks['inputs'] = 'BLOCKED'
+        if args.close:
+            checks['worktree'] = 'PASS' if task['phase'] == 'ARCHIVED' else 'PENDING'
+    if args.runtime:
+        try:
+            stable = mapping(state / 'stable.json')
+            observed = runtime_status(cwd, state)
+            match = not task or (stable and stable['sha'] == task['candidate_sha'] and stable['pins'] == task['pins'])
+            if match and tree:
+                contract = project_contract(state)
+                match = stable.get('build_inputs') == verification_inputs(tree, contract, submodule_status(tree))
+            checks['runtime'] = 'PASS' if observed.get('freshness') == 'CURRENT' and match else 'BLOCKED'
+        except (OSError, ValueError):
+            checks['runtime'] = 'BLOCKED'
+    if args.lesson:
+        if not KEY.fullmatch(args.lesson):
+            raise ValueError('Invalid knowledge ID')
+        lesson = mapping(state / 'knowledge' / (args.lesson + '.json'))
+        checks['lesson'] = ('PASS' if lesson and lesson['status'] == 'VERIFIED'
+                            and lesson.get('verified_state') == state_id(str(cwd)) else 'PENDING')
+    return {'status': 'BLOCKED' if {'BLOCKED', 'PENDING'}.intersection(checks.values()) else
+            'PASS' if 'PASS' in checks.values() else 'NOT_APPLICABLE', 'checks': checks}
+
+
+def runtime_status(cwd, state):
+    contract = project_contract(state)
+    stable = mapping(state / 'stable.json')
+    if (state / 'pending.json').exists():
+        raise ValueError('Deployment recovery pending')
+    if stable:
+        if not contract or stable['contract_signature'] != contract_signature(contract):
+            raise ValueError('Deployment contract drift')
+        verify_stored_artifact(state, stable)
+    result = probe(contract, cwd, stable) if contract else {'status': 'NOT_APPLICABLE'}
+    if stable:
+        result.update(freshness(cwd, stable))
+    return result
+
+
+def promotion_plan(cwd, state, name, summary):
+    lesson = mapping(state / 'knowledge' / (name + '.json'))
+    if (not lesson or lesson['status'] != 'VERIFIED' or
+            lesson.get('verified_state') != state_id(str(cwd))):
+        raise ValueError('Knowledge must have current verification before promotion review')
+    if not summary.strip() or len(summary) > 400 or '\n' in summary:
+        raise ValueError('Provide one concise, sanitized rule for review')
+    return {'status': 'REVIEW_REQUIRED', 'scope': 'GLOBAL_PROPOSAL', 'rule': summary.strip(),
+            'fingerprint': hashlib.sha256(summary.strip().casefold().encode()).hexdigest()}
+
+
 def parser():
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument('--repo', type=Path, default=Path.cwd())
     subs = cli.add_subparsers(dest='op', required=True)
     scan = subs.add_parser('inspect')
     scan.add_argument('--event', choices=EVENTS, default='start')
+    contract = subs.add_parser('contract')
+    contract.add_argument('--task')
+    contract.add_argument('--from-json', type=Path)
+    contract.add_argument('--apply', action='store_true')
+    gate = subs.add_parser('gate')
+    gate.add_argument('--base')
+    gate.add_argument('--task')
+    gate.add_argument('--runtime', action='store_true')
+    gate.add_argument('--close', action='store_true')
+    gate.add_argument('--lesson')
     sync = subs.add_parser('fetch')
     sync.add_argument('remote')
     sync.add_argument('--max-age', type=int, default=900)
@@ -584,6 +742,9 @@ def parser():
             cmd.add_argument('--evidence', type=Path)
             cmd.add_argument('--require')
     subs.add_parser('runtime')
+    promote = subs.add_parser('promotion-plan')
+    promote.add_argument('task')
+    promote.add_argument('--summary', required=True)
     subs.add_parser('recover')
     subs.add_parser('rollback')
     return cli
@@ -597,14 +758,26 @@ def main(argv=None):
         no_links(state)
         if args.op == 'inspect':
             result = topology(cwd, state, args.event)
+        elif args.op == 'contract' and args.from_json is None and not args.apply:
+            result = discover_contract(cwd, state)
         elif args.op == 'plan':
             result = candidate(cwd, args.base, args.include, args.exclude)
         elif args.op == 'compare':
             result = compare(cwd, args.base, args.tip)
         else:
-            name = getattr(args, 'task', '')
+            name = getattr(args, 'task', '') or ''
             if name and not KEY.fullmatch(name):
                 raise ValueError('Invalid task or knowledge ID')
+            if args.op == 'promotion-plan':
+                print(json.dumps(promotion_plan(cwd, state, name, args.summary), indent=2, ensure_ascii=True))
+                return 0
+            if args.op == 'gate':
+                task = mapping(state / 'tasks' / (name + '.json')) if name else None
+                if (name or args.close) and not task:
+                    raise ValueError('Gate needs an existing integration task')
+                result = delivery_gate(cwd, state, args, task)
+                print(json.dumps(result, indent=2, ensure_ascii=True))
+                return 1 if result['status'] == 'BLOCKED' else 0
             with locked(state):
                 record = state / 'tasks' / (name + '.json')
                 if args.op == 'fetch':
@@ -618,6 +791,11 @@ def main(argv=None):
                     result = checkpoint(cwd, state, name, args.from_json)
                 elif args.op == 'knowledge':
                     result = knowledge(cwd, state, name, args.from_json, args.archive, args.evidence, args.require)
+                elif args.op == 'contract':
+                    task = mapping(record) if name else None
+                    if not task or not args.from_json:
+                        raise ValueError('Contract registration needs --task and --from-json')
+                    result = register_contract(cwd, state, task, args.from_json, args.apply)
                 elif args.op in ('deploy', 'cleanup'):
                     task = mapping(record)
                     if not task:
@@ -630,17 +808,7 @@ def main(argv=None):
                 elif args.op == 'rollback':
                     result = rollback(cwd, state)
                 else:
-                    contract = project_contract(state)
-                    stable = mapping(state / 'stable.json')
-                    if (state / 'pending.json').exists():
-                        raise ValueError('Deployment recovery pending')
-                    if stable:
-                        if not contract or stable['contract_signature'] != contract_signature(contract):
-                            raise ValueError('Deployment contract drift')
-                        verify_stored_artifact(state, stable)
-                    result = probe(contract, cwd, stable) if contract else {'status': 'NOT_APPLICABLE'}
-                    if stable:
-                        result.update(freshness(cwd, stable))
+                    result = runtime_status(cwd, state)
         print(json.dumps(result, indent=2, ensure_ascii=True))
         return 0
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:

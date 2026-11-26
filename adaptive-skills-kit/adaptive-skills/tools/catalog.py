@@ -45,7 +45,9 @@ def catalog(root):
                 raise ValueError(f'Missing catalog field {name}.{field}')
         if entry['name'] != name or not (entry['source'].startswith('https://') or entry['source'] == 'Local-only'):
             raise ValueError(f'Invalid name/source for {name}')
-        if any(part in {'', '.', '..'} or ':' in part or '\\' in part for part in entry['source_path'].split('/')):
+        public_root = entry['source_path'] == '.' and entry['tier'] != 'CORE' and entry['source'].startswith('https://')
+        if not public_root and any(part in {'', '.', '..'} or ':' in part or '\\' in part
+                                   for part in entry['source_path'].split('/')):
             raise ValueError(f'Invalid source subdirectory for {name}')
         for field in ('capabilities', 'agents', 'os', 'dependencies', 'conflicts'):
             if not isinstance(entry[field], list) or any(not isinstance(item, str) for item in entry[field]):

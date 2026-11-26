@@ -106,7 +106,7 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Trust** Bundled core
 - **Status** BUNDLED
 - **Verified** 2026-11-26
-- **Version** `178e171f0ff2131641d15026ced24353d0d4e87910c159ae309f753e6c79d2dc`
+- **Version** `2def62fd675ec3db4ed6ef03c71dd801cdd5c0d82b705ab711a0b276a484f618`
 
 ## team-mode
 
@@ -316,7 +316,7 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Trust** Bundled core
 - **Status** BUNDLED
 - **Verified** 2026-11-26
-- **Version** `bd5b3d83858771e7a14d4ac15686961fa7e3cbc5524a4a15ba546d25b20ea493`
+- **Version** `00f2063a33e794cd09f24bcb66b268f754680d066633a44109864fee4abddaa2`
 
 ## skills-maintenance
 
@@ -349,10 +349,10 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Source** Local-only
 - **Source path** design-hub
 - **License** Distribution permission unverified
-- **Installation** Use an independently installed, reviewed copy
+- **Installation** Owner-authorized private transfer only; review and hash the source before restoring
 - **Agents** claude
 - **Os** windows, linux, macos
-- **Evidence** Local metadata inspected; independent runtime evaluation required
+- **Evidence** Local source inspected; public upstream and redistribution terms unverified
 - **Dependencies** None recorded
 - **Conflicts** design-workflow
 - **Trust** Independent local asset; do not redistribute
@@ -370,10 +370,10 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Source** Local-only
 - **Source path** design-workflow
 - **License** Distribution permission unverified
-- **Installation** Use an independently installed, reviewed copy
+- **Installation** Owner-authorized private transfer only; review and hash the source before restoring
 - **Agents** codex
 - **Os** windows, linux, macos
-- **Evidence** Local metadata inspected; independent runtime evaluation required
+- **Evidence** Local source inspected; public upstream and redistribution terms unverified
 - **Dependencies** None recorded
 - **Conflicts** design-hub
 - **Trust** Independent local asset; do not redistribute
@@ -388,19 +388,19 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Capabilities** media-animation
 - **Triggers** Use cleared image sequences or video for scroll or gesture animation.
 - **Non goals** Ordinary CSS micro-interactions.
-- **Source** Local-only
-- **Source path** oil-motion
-- **License** Distribution permission unverified
-- **Installation** Use an independently installed, reviewed copy
+- **Source** https://github.com/oil-oil/oil-motion
+- **Source path** .
+- **License** MIT; external media and provider terms are separate
+- **Installation** stage-reference oil-motion; isolate and review before native installation
 - **Agents** codex
 - **Os** windows, linux, macos
-- **Evidence** Local metadata inspected; independent runtime evaluation required
+- **Evidence** Publisher Git blobs and source license inspected; publisher SKILL.md differs from the local copy
 - **Dependencies** None recorded
 - **Conflicts** None recorded
-- **Trust** Independent local asset; do not redistribute
-- **Status** LOCAL_REFERENCE
+- **Trust** Pinned review-only runtime subset; separate approval for scripts, browsers and credentials
+- **Status** REFERENCE
 - **Verified** 2026-11-26
-- **Version** `Pin during local review`
+- **Version** `c930f4477304603b192c9633a449c9f4da98d75c`
 
 ## oil-ui
 
@@ -409,16 +409,16 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Capabilities** ui-design, visual-review
 - **Triggers** Design and validate a web or app interface against the existing product direction.
 - **Non goals** Backend logic and circuit-level debugging.
-- **Source** Local-only
-- **Source path** oil-ui
-- **License** Distribution permission unverified
-- **Installation** Use an independently installed, reviewed copy
+- **Source** https://github.com/oil-oil/oil-ui
+- **Source path** .
+- **License** MIT; bundled font retains its SIL Open Font License
+- **Installation** stage-reference oil-ui; isolate and review before native installation
 - **Agents** codex
 - **Os** windows, linux, macos
-- **Evidence** Local metadata inspected; independent runtime evaluation required
+- **Evidence** Publisher Git blobs and source license inspected; publisher SKILL.md differs from the local copy
 - **Dependencies** None recorded
 - **Conflicts** None recorded
-- **Trust** Independent local asset; do not redistribute
-- **Status** LOCAL_REFERENCE
+- **Trust** Pinned review-only runtime subset; separate approval for scripts, browsers and credentials
+- **Status** REFERENCE
 - **Verified** 2026-11-26
-- **Version** `Pin during local review`
+- **Version** `82464b1ef8ff41808497642dba5342852ced70ae`
