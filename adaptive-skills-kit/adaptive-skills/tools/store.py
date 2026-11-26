@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import stat
 import tempfile
+import time
 import uuid
 from contextlib import contextmanager
 
@@ -80,6 +81,19 @@ def signature(path):
     return ["file", digest(path.read_bytes())]
 
 
+def replace(source, destination, *, vacant=False):
+    for delay in (0.04, 0.08, 0.16, 0.32, 0.64, None):
+        if vacant and os.path.lexists(destination):
+            raise ValueError(f'Transaction destination appeared unexpectedly: {destination}')
+        try:
+            os.replace(source, destination)
+            return
+        except OSError as exc:
+            if delay is None or getattr(exc, 'winerror', None) not in {5, 32, 33}:
+                raise
+            time.sleep(delay)
+
+
 def atomic(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, name = tempfile.mkstemp(dir=path.parent, prefix=".ei-")
@@ -88,7 +102,7 @@ def atomic(path, data):
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(name, path)
+        replace(name, path)
     finally:
         if os.path.exists(name):
             os.unlink(name)
@@ -160,9 +174,9 @@ def recover(journal):
             continue
         if os.path.lexists(dest):
             scratch.mkdir(mode=0o700, exist_ok=True)
-            os.replace(dest, discarded)
+            replace(dest, discarded, vacant=True)
         if os.path.lexists(old):
-            os.replace(old, dest)
+            replace(old, dest, vacant=True)
     for rec in records:
         scratch = Path(rec['scratch'])
         if scratch.exists():
@@ -173,7 +187,7 @@ def recover(journal):
 def rollback(root, journal):
     validate_recovery(journal, check_all=True)
     pending = root / 'pending.json'
-    os.replace(journal, pending)
+    replace(journal, pending, vacant=True)
     recover(pending)
 
 
@@ -208,15 +222,15 @@ def transact(root, changes):
             if signature(scratch / 'new') != rec['after'] or signature(dest) != rec['before']:
                 raise ValueError(f"Pre-activation integrity check failed: {dest}")
             if rec['before'] is not None:
-                os.replace(dest, scratch / 'old')
+                replace(dest, scratch / 'old', vacant=True)
             if payload is not None:
-                os.replace(scratch / 'new', dest)
+                replace(scratch / 'new', dest, vacant=True)
         for rec in records:
             if signature(Path(rec['dest'])) != rec['after']:
                 raise ValueError(f"Post-activation integrity check failed: {rec['dest']}")
         history = root / 'history' / f'{txn}.json'
         history.parent.mkdir(exist_ok=True)
-        os.replace(journal, history)
+        replace(journal, history, vacant=True)
     except BaseException:
         recover(journal)
         raise

@@ -213,6 +213,32 @@ class Lifecycle(unittest.TestCase):
         self.assertFalse(second.exists())
         self.assertFalse((self.state / 'pending.json').exists())
 
+    def test_windows_rename_retry_is_bounded_and_keeps_new_targets(self):
+        original = store.os.replace
+        denied = OSError('fixture temporary access denial')
+        denied.winerror = 5
+        source, dest = self.base / 'rename-from', self.base / 'rename-to'
+        source.write_bytes(b'verified')
+        faults = [denied]
+
+        def rename_with_fault(a, b):
+            if faults:
+                raise faults.pop()
+            original(a, b)
+
+        with patch.object(store.time, 'sleep') as sleep, patch.object(store.os, 'replace', side_effect=rename_with_fault):
+            store.replace(source, dest, vacant=True)
+            sleep.assert_called_once()
+        self.assertEqual(dest.read_bytes(), b'verified')
+        source.write_bytes(b'other')
+        with self.assertRaisesRegex(ValueError, 'appeared'):
+            store.replace(source, dest, vacant=True)
+        with patch.object(store.time, 'sleep'), patch.object(store.os, 'replace', side_effect=denied) as rename:
+            with self.assertRaises(OSError):
+                store.replace(source, dest)
+            self.assertEqual(rename.call_count, 6)
+        self.assertEqual(dest.read_bytes(), b'verified')
+
     def test_failed_online_stage_and_invalid_policy_do_not_activate(self):
         self.apply()
         with patch.object(candidate, 'acquire', side_effect=TimeoutError('injected timeout')):
