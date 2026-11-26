@@ -20,8 +20,8 @@ def metadata(data, name):
     fields = {}
     for line in header:
         key, sep, value = line.partition(':')
-        if not sep or key in fields or key not in {'name', 'description'}:
-            raise ValueError('Expected unique name and description fields')
+        if not sep or key in fields or key not in {'name', 'description', 'license', 'compatibility'}:
+            raise ValueError('Unsupported or repeated Skill metadata')
         fields[key] = value.strip().strip('"\'')
     if len(name) > 64 or not ID.fullmatch(name) or fields.get('name') != name:
         raise ValueError('Invalid Skill name or directory mismatch')
@@ -51,25 +51,47 @@ def catalog(root):
             if not isinstance(entry[field], list) or any(not isinstance(item, str) for item in entry[field]):
                 raise ValueError(f'Invalid list for {name}.{field}')
         date.fromisoformat(entry['verified'])
+        if entry.get('pin'):
+            from candidate import REPO, SHA, source_path
+            pin = entry['pin']
+            if (not REPO.fullmatch(pin['repo']) or any(x in {'.', '..'} for x in pin['repo'].split('/'))
+                    or not SHA.fullmatch(pin['commit']) or pin['lane'] not in {'review-only', 'markdown'}
+                    or not 1 <= len(pin['files']) <= 100
+                    or 'SKILL.md' not in pin['files'] or pin.get('license_file') not in {'LICENSE', 'LICENSE.txt'}
+                    or pin['license_file'] not in pin['files']
+                    or len(set(name.casefold() for name in pin['files'])) != len(pin['files'])):
+                raise ValueError(f'Invalid pinned bundle: {name}')
+            if entry['source'] != f"https://github.com/{pin['repo']}":
+                raise ValueError(f'Pinned repository disagrees with source: {name}')
+            if pin['lane'] == 'markdown' and set(pin['files']) != {'SKILL.md', pin['license_file']}:
+                raise ValueError('Markdown activation is limited to SKILL.md and its license')
+            for dest, item in pin['files'].items():
+                source_path(dest)
+                source_path(item['path'])
+                if not re.fullmatch(r'[0-9a-f]{64}', item['sha256']):
+                    raise ValueError(f'Invalid pinned file digest: {dest}')
         entries[name] = entry
     return entries
 
 
 def core_lock(root, registry_dir):
     lock = {}
+    pinned = {}
     for name, entry in catalog(registry_dir).items():
         if entry['tier'] != 'CORE':
+            if entry.get('pin'):
+                pinned[name] = entry['pin']
             continue
         path = root / entry['source_path']
         payload = files(path, portable=True)
         metadata(payload['SKILL.md'], name)
         lock[name] = fingerprint(payload)
-    return {'schema': 1, 'sha256': lock}
+    return {'schema': 1, 'sha256': lock, 'reference': pinned}
 
 
 def reference(entries, lock):
     lines = ['# Skills reference', '', 'Generated from `skills-registry.json` and `skills-lock.json`.',
-             'The CORE tree hashes pin bundled content. Local references require their own reviewed source and pin.', '']
+             'CORE tree hashes pin bundled content. Public bundle pins include the source revision and every selected file.', '']
     for name, row in sorted(entries.items(), key=lambda item: (item[1]['category'], item[0])):
         lines.extend((f'## {name}', ''))
         for field in ('category', 'tier', 'capabilities', 'triggers', 'non_goals', 'source', 'source_path',
@@ -79,7 +101,7 @@ def reference(entries, lock):
             if isinstance(value, list):
                 value = ', '.join(value) or 'None recorded'
             lines.append(f"- **{field.replace('_', ' ').capitalize()}** {value}")
-        version = lock['sha256'].get(name, row.get('version', 'Pin during local review'))
+        version = lock['sha256'].get(name, row.get('pin', {}).get('commit', row.get('version', 'Pin during local review')))
         lines.extend((f'- **Version** `{version}`', ''))
     return ('\n'.join(lines).rstrip() + '\n').encode()
 
@@ -160,7 +182,8 @@ def resolve(needs, entries, installed, native, agent, platform):
             candidate = matches[0]
             decisions.append({'capability': need, 'action': 'USE_INSTALLED' if candidate['id'] in installed
                               else 'REVIEW_REFERENCE', 'id': candidate['id'], 'candidates': [item['id'] for item in matches],
-                              'dependencies': candidate['dependencies'], 'conflicts': candidate['conflicts']})
+                              'dependencies': candidate['dependencies'], 'conflicts': candidate['conflicts'],
+                              'acquisition': candidate.get('pin', {}).get('lane')})
         else:
             decisions.append({'capability': need, 'action': 'DISCOVER_OR_FALL_BACK',
                               'reason': 'No compatible installed or catalog capability'})

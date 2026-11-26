@@ -1,7 +1,7 @@
 # Skills reference
 
 Generated from `skills-registry.json` and `skills-lock.json`.
-The CORE tree hashes pin bundled content. Local references require their own reviewed source and pin.
+CORE tree hashes pin bundled content. Public bundle pins include the source revision and every selected file.
 
 ## academic-research-plan
 
@@ -24,6 +24,27 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Verified** 2026-11-26
 - **Version** `Pin during local review`
 
+## jupyter-notebook
+
+- **Category** AI/ML & Research
+- **Tier** DOMAIN
+- **Capabilities** notebook-engineering
+- **Triggers** Create or maintain a runnable notebook with a reproducible structure.
+- **Non goals** Ordinary edits already covered by native project tooling.
+- **Source** https://github.com/openai/skills
+- **Source path** skills/.curated/jupyter-notebook
+- **License** Apache-2.0
+- **Installation** stage-reference jupyter-notebook; isolated review, native adapter after authorization
+- **Agents** codex
+- **Os** windows, linux, macos
+- **Evidence** Publisher bundle files read and hash-pinned; functional runtime evaluation remains separate.
+- **Dependencies** Python and the project notebook runtime
+- **Conflicts** None recorded
+- **Trust** Pinned upstream review lane with executable content.
+- **Status** REFERENCE
+- **Verified** 2026-11-26
+- **Version** `49f948faa9258a0c61caceaf225e179651397431`
+
 ## gh-fix-ci
 
 - **Category** CI & Release
@@ -31,19 +52,19 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Capabilities** ci-debugging
 - **Triggers** An existing GitHub Actions PR check fails.
 - **Non goals** Pipeline design and general debugging.
-- **Source** Local-only
-- **Source path** gh-fix-ci
-- **License** Distribution permission unverified
-- **Installation** Use an independently installed, reviewed copy
+- **Source** https://github.com/openai/skills
+- **Source path** skills/.curated/gh-fix-ci
+- **License** Apache-2.0
+- **Installation** stage-reference gh-fix-ci; isolated review, native adapter after authorization
 - **Agents** codex
 - **Os** windows, linux, macos
-- **Evidence** Local metadata inspected; independent runtime evaluation required
+- **Evidence** Local provenance matches the pinned publisher and file inventory; the local variant carries adaptations. Runtime evaluation of the upstream bundle remains separate.
 - **Dependencies** Authenticated GitHub CLI
 - **Conflicts** None recorded
-- **Trust** Independent local asset; do not redistribute
-- **Status** LOCAL_REFERENCE
+- **Trust** Pinned upstream review lane. Keep independently maintained variants under their existing ownership.
+- **Status** REFERENCE
 - **Verified** 2026-11-26
-- **Version** `Pin during local review`
+- **Version** `49f948faa9258a0c61caceaf225e179651397431`
 
 ## constraint-ladder
 
@@ -70,7 +91,7 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 
 - **Category** Core Engineering
 - **Tier** CORE
-- **Capabilities** engineering-workflow, implementation, debugging, verification, risk-routing, quality-gates
+- **Capabilities** engineering-workflow, implementation, debugging, verification, risk-routing, quality-gates, repository-synchronization, integration-deployment, worktree-governance, context-checkpoint, knowledge-distillation
 - **Triggers** Substantive implementation, bug fixes, verification and delivery.
 - **Non goals** Simple questions and domain-specific workflow rules.
 - **Source** https://github.com/Koooki3/Engineering-Infrastructure
@@ -80,12 +101,12 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Agents** codex, claude, opencode, antigravity
 - **Os** windows, linux, macos
 - **Evidence** Bundled source and offline regression suite
-- **Dependencies** Python 3.9+, Git for bound evidence
+- **Dependencies** Python 3.9+, Git 2.31+ for the project lifecycle
 - **Conflicts** None recorded
 - **Trust** Bundled core
 - **Status** BUNDLED
 - **Verified** 2026-11-26
-- **Version** `3915ad2418688674912dbb9fad9e86b33c6edb49182a33c6075c5ede1a7c540f`
+- **Version** `d59f2d40337cc0e469a8d26822a99ee61762650d4710a739564bce63b881b663`
 
 ## team-mode
 
@@ -159,17 +180,17 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Non goals** Backend or performance-only requests.
 - **Source** https://github.com/anthropics/skills
 - **Source path** skills/frontend-design
-- **License** Publisher-specific terms; read LICENSE.txt
-- **Installation** Review upstream terms and pin an exact revision before acquisition
+- **License** Apache-2.0
+- **Installation** stage-reference frontend-design; reviewed Markdown activation only
 - **Agents** codex, claude, opencode, antigravity
 - **Os** windows, linux, macos
-- **Evidence** Publisher source and corresponding local name reviewed; exact content equivalence unverified
+- **Evidence** Local source record and both source file hashes identify the upstream copy. Runtime evaluation remains separate.
 - **Dependencies** None recorded
 - **Conflicts** None recorded
-- **Trust** Upstream reference; candidate review required
+- **Trust** Pinned publisher copy. Auto-activation requires user-approved exact bytes and scope.
 - **Status** REFERENCE
 - **Verified** 2026-11-26
-- **Version** `Pin during local review`
+- **Version** `e4bb5d960d87126ff3b3a8af1a104b7db67560ba`
 
 ## vercel-react-best-practices
 
@@ -180,17 +201,17 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Non goals** Static non-React sites and purely visual changes.
 - **Source** https://github.com/vercel-labs/agent-skills
 - **Source path** skills/react-best-practices
-- **License** MIT upstream; local derivative requires separate review
-- **Installation** Review upstream terms and pin an exact revision before acquisition
+- **License** MIT declared in upstream frontmatter; the pinned tree has no separate license file
+- **Installation** Review exact source and applicable legal terms using the native installer; no automatic bundle
 - **Agents** codex, claude, opencode, antigravity
 - **Os** windows, linux, macos
-- **Evidence** Publisher source and corresponding local name reviewed; exact content equivalence unverified
+- **Evidence** Local provenance records the exact upstream revision and adapted files. Full upstream runtime evaluation remains pending.
 - **Dependencies** React/Next.js project
 - **Conflicts** None recorded
 - **Trust** Upstream reference; candidate review required
 - **Status** REFERENCE
 - **Verified** 2026-11-26
-- **Version** `Pin during local review`
+- **Version** `063bee94c3f4df8453406c830b0a7df0f2860278`
 
 ## web-accessibility
 
@@ -199,19 +220,19 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Capabilities** web-accessibility
 - **Triggers** Audit keyboard paths, semantics and assistive technology behavior.
 - **Non goals** Legal compliance certification.
-- **Source** Local-only
-- **Source path** web-accessibility
-- **License** Distribution permission unverified
-- **Installation** Use an independently installed, reviewed copy
+- **Source** https://github.com/addyosmani/web-quality-skills
+- **Source path** skills/accessibility
+- **License** MIT
+- **Installation** stage-reference web-accessibility; isolated review, native adapter after authorization
 - **Agents** codex
 - **Os** windows, linux, macos
-- **Evidence** Local metadata inspected; independent runtime evaluation required
+- **Evidence** Local provenance matches the pinned publisher and file inventory; the local variant carries adaptations. Runtime evaluation of the upstream bundle remains separate.
 - **Dependencies** None recorded
 - **Conflicts** None recorded
-- **Trust** Independent local asset; do not redistribute
-- **Status** LOCAL_REFERENCE
+- **Trust** Pinned upstream review lane. Keep independently maintained variants under their existing ownership.
+- **Status** REFERENCE
 - **Verified** 2026-11-26
-- **Version** `Pin during local review`
+- **Version** `afa8da942115f2961fdbfa80807ea0b232ff6c00`
 
 ## gh-address-comments
 
@@ -220,19 +241,19 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Capabilities** pr-feedback
 - **Triggers** Process requested code changes from existing review comments.
 - **Non goals** Publishing replies or resolving threads without authorization.
-- **Source** Local-only
-- **Source path** gh-address-comments
-- **License** Distribution permission unverified
-- **Installation** Use an independently installed, reviewed copy
+- **Source** https://github.com/openai/skills
+- **Source path** skills/.curated/gh-address-comments
+- **License** Apache-2.0
+- **Installation** stage-reference gh-address-comments; isolated review, native adapter after authorization
 - **Agents** codex
 - **Os** windows, linux, macos
-- **Evidence** Local metadata inspected; independent runtime evaluation required
+- **Evidence** Local provenance matches the pinned publisher and file inventory; the local variant carries adaptations. Runtime evaluation of the upstream bundle remains separate.
 - **Dependencies** GitHub connector or CLI
 - **Conflicts** None recorded
-- **Trust** Independent local asset; do not redistribute
-- **Status** LOCAL_REFERENCE
+- **Trust** Pinned upstream review lane. Keep independently maintained variants under their existing ownership.
+- **Status** REFERENCE
 - **Verified** 2026-11-26
-- **Version** `Pin during local review`
+- **Version** `49f948faa9258a0c61caceaf225e179651397431`
 
 ## pr-authoring
 
@@ -255,6 +276,27 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Verified** 2026-11-26
 - **Version** `afd40bd953fdef409d52f9f7fc382c4791cb5b83ff42eeaf4e64def9e50f8acf`
 
+## playwright
+
+- **Category** Runtime Verification
+- **Tier** DOMAIN
+- **Capabilities** browser-runtime-verification
+- **Triggers** Use a browser CLI to inspect and verify a real web interaction.
+- **Non goals** Ordinary edits already covered by native project tooling.
+- **Source** https://github.com/openai/skills
+- **Source path** skills/.curated/playwright
+- **License** Apache-2.0
+- **Installation** stage-reference playwright; isolated review, native adapter after authorization
+- **Agents** codex
+- **Os** windows, linux, macos
+- **Evidence** Publisher bundle files read and hash-pinned; functional runtime evaluation remains separate.
+- **Dependencies** Node.js and the installed Playwright browser runtime
+- **Conflicts** None recorded
+- **Trust** Pinned upstream review lane with executable content.
+- **Status** REFERENCE
+- **Verified** 2026-11-26
+- **Version** `49f948faa9258a0c61caceaf225e179651397431`
+
 ## adaptive-skills
 
 - **Category** Skill Lifecycle
@@ -274,7 +316,7 @@ The CORE tree hashes pin bundled content. Local references require their own rev
 - **Trust** Bundled core
 - **Status** BUNDLED
 - **Verified** 2026-11-26
-- **Version** `d8a7b82e4164f2d7f0572ac6d1b72d4e3947aa4fc3e071b40431f2e7317ab562`
+- **Version** `247ae50343988726f187f75257d88e89456d16ece658d85187c2f528769e6b78`
 
 ## skills-maintenance
 

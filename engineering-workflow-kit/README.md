@@ -2,6 +2,8 @@
 
 新装或迁移用户级环境时使用[三套 Kit 的全局部署入口](../BOOTSTRAP.md)。已有部署计划和回滚状态仍可使用本文的单 Skill 部署工具。
 
+Git 项目按[仓库与工作空间生命周期](engineering-workflow/references/lifecycle.md)完成同步、独立集成、实际部署验证、回滚、工作树归档及本地交接。
+
 跨项目、跨 Agent（Claude Code / Codex）、跨 OS（Windows / WSL）的最小工程闭环：风险路由（Fast/Standard/Critical）+ 证据绑定 + 机械检查。形态参照同级的 `pr-authoring-kit`：一个可部署的 skill 目录 + 说明；PR 阶段只交接给 `pr-authoring`，不复制、不改变其行为。
 
 ## 目录

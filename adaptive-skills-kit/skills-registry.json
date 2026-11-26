@@ -12,7 +12,12 @@
         "debugging",
         "verification",
         "risk-routing",
-        "quality-gates"
+        "quality-gates",
+        "repository-synchronization",
+        "integration-deployment",
+        "worktree-governance",
+        "context-checkpoint",
+        "knowledge-distillation"
       ],
       "triggers": "Substantive implementation, bug fixes, verification and delivery.",
       "non_goals": "Simple questions and domain-specific workflow rules.",
@@ -33,7 +38,7 @@
       ],
       "evidence": "Bundled source and offline regression suite",
       "dependencies": [
-        "Python 3.9+, Git for bound evidence"
+        "Python 3.9+, Git 2.31+ for the project lifecycle"
       ],
       "conflicts": [],
       "trust": "Bundled core",
@@ -210,10 +215,10 @@
       ],
       "triggers": "An existing GitHub Actions PR check fails.",
       "non_goals": "Pipeline design and general debugging.",
-      "source": "Local-only",
-      "source_path": "gh-fix-ci",
-      "license": "Distribution permission unverified",
-      "installation": "Use an independently installed, reviewed copy",
+      "source": "https://github.com/openai/skills",
+      "source_path": "skills/.curated/gh-fix-ci",
+      "license": "Apache-2.0",
+      "installation": "stage-reference gh-fix-ci; isolated review, native adapter after authorization",
       "agents": [
         "codex"
       ],
@@ -222,14 +227,46 @@
         "linux",
         "macos"
       ],
-      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "evidence": "Local provenance matches the pinned publisher and file inventory; the local variant carries adaptations. Runtime evaluation of the upstream bundle remains separate.",
       "dependencies": [
         "Authenticated GitHub CLI"
       ],
       "conflicts": [],
-      "trust": "Independent local asset; do not redistribute",
-      "status": "LOCAL_REFERENCE",
-      "verified": "2026-11-26"
+      "trust": "Pinned upstream review lane. Keep independently maintained variants under their existing ownership.",
+      "status": "REFERENCE",
+      "verified": "2026-11-26",
+      "pin": {
+        "repo": "openai/skills",
+        "commit": "49f948faa9258a0c61caceaf225e179651397431",
+        "lane": "review-only",
+        "license_file": "LICENSE.txt",
+        "files": {
+          "LICENSE.txt": {
+            "path": "skills/.curated/gh-fix-ci/LICENSE.txt",
+            "sha256": "4dd13869245e356246a5b770723247bbb80a8f07a181d1d3d873a1734297cdb9"
+          },
+          "SKILL.md": {
+            "path": "skills/.curated/gh-fix-ci/SKILL.md",
+            "sha256": "7b326b4a2f0f5f85122144628ec02077e48841e0e0e82efce88b3415bcfb7c26"
+          },
+          "agents/openai.yaml": {
+            "path": "skills/.curated/gh-fix-ci/agents/openai.yaml",
+            "sha256": "36f73b9450504983d1647c960689596f59bf9147c14b1b43162912ed7ada9af6"
+          },
+          "assets/github-small.svg": {
+            "path": "skills/.curated/gh-fix-ci/assets/github-small.svg",
+            "sha256": "ee05e92d373d4d84f4612af3c1090ef67698d421bbe30896a4ed5a00cb86a069"
+          },
+          "assets/github.png": {
+            "path": "skills/.curated/gh-fix-ci/assets/github.png",
+            "sha256": "d55a9baa41798d8b5108e3058df3a5bda09914ea9fd73b49929cc38a8832424f"
+          },
+          "scripts/inspect_pr_checks.py": {
+            "path": "skills/.curated/gh-fix-ci/scripts/inspect_pr_checks.py",
+            "sha256": "9459e5b03f86785d184a83e5cd8d621b832e918ec04158a2962d867785812c6c"
+          }
+        }
+      }
     },
     {
       "id": "gh-address-comments",
@@ -241,10 +278,10 @@
       ],
       "triggers": "Process requested code changes from existing review comments.",
       "non_goals": "Publishing replies or resolving threads without authorization.",
-      "source": "Local-only",
-      "source_path": "gh-address-comments",
-      "license": "Distribution permission unverified",
-      "installation": "Use an independently installed, reviewed copy",
+      "source": "https://github.com/openai/skills",
+      "source_path": "skills/.curated/gh-address-comments",
+      "license": "Apache-2.0",
+      "installation": "stage-reference gh-address-comments; isolated review, native adapter after authorization",
       "agents": [
         "codex"
       ],
@@ -253,14 +290,46 @@
         "linux",
         "macos"
       ],
-      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "evidence": "Local provenance matches the pinned publisher and file inventory; the local variant carries adaptations. Runtime evaluation of the upstream bundle remains separate.",
       "dependencies": [
         "GitHub connector or CLI"
       ],
       "conflicts": [],
-      "trust": "Independent local asset; do not redistribute",
-      "status": "LOCAL_REFERENCE",
-      "verified": "2026-11-26"
+      "trust": "Pinned upstream review lane. Keep independently maintained variants under their existing ownership.",
+      "status": "REFERENCE",
+      "verified": "2026-11-26",
+      "pin": {
+        "repo": "openai/skills",
+        "commit": "49f948faa9258a0c61caceaf225e179651397431",
+        "lane": "review-only",
+        "license_file": "LICENSE.txt",
+        "files": {
+          "LICENSE.txt": {
+            "path": "skills/.curated/gh-address-comments/LICENSE.txt",
+            "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+          },
+          "SKILL.md": {
+            "path": "skills/.curated/gh-address-comments/SKILL.md",
+            "sha256": "77389eefd3fb6584210668ca8e43f4b8de87e7722ddd953474bc9e24cdfaaedd"
+          },
+          "agents/openai.yaml": {
+            "path": "skills/.curated/gh-address-comments/agents/openai.yaml",
+            "sha256": "12cf845a78254dde85e60eefb45a60e6ce2129d321f3e1d691d4ebca9a140861"
+          },
+          "assets/github-small.svg": {
+            "path": "skills/.curated/gh-address-comments/assets/github-small.svg",
+            "sha256": "ee05e92d373d4d84f4612af3c1090ef67698d421bbe30896a4ed5a00cb86a069"
+          },
+          "assets/github.png": {
+            "path": "skills/.curated/gh-address-comments/assets/github.png",
+            "sha256": "d55a9baa41798d8b5108e3058df3a5bda09914ea9fd73b49929cc38a8832424f"
+          },
+          "scripts/fetch_comments.py": {
+            "path": "skills/.curated/gh-address-comments/scripts/fetch_comments.py",
+            "sha256": "d7bc64f6b26f7482f9ca9dd7c923a5b8b20e1ef13491ae2d9052cd208a7c1ad1"
+          }
+        }
+      }
     },
     {
       "id": "design-workflow",
@@ -393,10 +462,10 @@
       ],
       "triggers": "Audit keyboard paths, semantics and assistive technology behavior.",
       "non_goals": "Legal compliance certification.",
-      "source": "Local-only",
-      "source_path": "web-accessibility",
-      "license": "Distribution permission unverified",
-      "installation": "Use an independently installed, reviewed copy",
+      "source": "https://github.com/addyosmani/web-quality-skills",
+      "source_path": "skills/accessibility",
+      "license": "MIT",
+      "installation": "stage-reference web-accessibility; isolated review, native adapter after authorization",
       "agents": [
         "codex"
       ],
@@ -405,12 +474,36 @@
         "linux",
         "macos"
       ],
-      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "evidence": "Local provenance matches the pinned publisher and file inventory; the local variant carries adaptations. Runtime evaluation of the upstream bundle remains separate.",
       "dependencies": [],
       "conflicts": [],
-      "trust": "Independent local asset; do not redistribute",
-      "status": "LOCAL_REFERENCE",
-      "verified": "2026-11-26"
+      "trust": "Pinned upstream review lane. Keep independently maintained variants under their existing ownership.",
+      "status": "REFERENCE",
+      "verified": "2026-11-26",
+      "pin": {
+        "repo": "addyosmani/web-quality-skills",
+        "commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+        "lane": "review-only",
+        "license_file": "LICENSE",
+        "files": {
+          "LICENSE": {
+            "path": "LICENSE",
+            "sha256": "c122223ac43e86421958e18623979942c21b642951e2e3736dcb63eff13587c3"
+          },
+          "SKILL.md": {
+            "path": "skills/accessibility/SKILL.md",
+            "sha256": "267fb2a0707d6142f2871f22688203a42ba21291a2aa200fb740936e41362b5d"
+          },
+          "references/A11Y-PATTERNS.md": {
+            "path": "skills/accessibility/references/A11Y-PATTERNS.md",
+            "sha256": "f10e238dd4dd3c4f51134c2056bc02d3dd4f8fb6ccc9145c2c1ba7aab4d58140"
+          },
+          "references/WCAG.md": {
+            "path": "skills/accessibility/references/WCAG.md",
+            "sha256": "16683e025e3833d931c9d880645d98a448827f97e10189b6c8f12c832e7a2361"
+          }
+        }
+      }
     },
     {
       "id": "frontend-design",
@@ -424,8 +517,8 @@
       "non_goals": "Backend or performance-only requests.",
       "source": "https://github.com/anthropics/skills",
       "source_path": "skills/frontend-design",
-      "license": "Publisher-specific terms; read LICENSE.txt",
-      "installation": "Review upstream terms and pin an exact revision before acquisition",
+      "license": "Apache-2.0",
+      "installation": "stage-reference frontend-design; reviewed Markdown activation only",
       "agents": [
         "codex",
         "claude",
@@ -437,12 +530,28 @@
         "linux",
         "macos"
       ],
-      "evidence": "Publisher source and corresponding local name reviewed; exact content equivalence unverified",
+      "evidence": "Local source record and both source file hashes identify the upstream copy. Runtime evaluation remains separate.",
       "dependencies": [],
       "conflicts": [],
-      "trust": "Upstream reference; candidate review required",
+      "trust": "Pinned publisher copy. Auto-activation requires user-approved exact bytes and scope.",
       "status": "REFERENCE",
-      "verified": "2026-11-26"
+      "verified": "2026-11-26",
+      "pin": {
+        "repo": "anthropics/skills",
+        "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
+        "lane": "markdown",
+        "license_file": "LICENSE.txt",
+        "files": {
+          "LICENSE.txt": {
+            "path": "skills/frontend-design/LICENSE.txt",
+            "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+          },
+          "SKILL.md": {
+            "path": "skills/frontend-design/SKILL.md",
+            "sha256": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3"
+          }
+        }
+      }
     },
     {
       "id": "vercel-react-best-practices",
@@ -456,8 +565,8 @@
       "non_goals": "Static non-React sites and purely visual changes.",
       "source": "https://github.com/vercel-labs/agent-skills",
       "source_path": "skills/react-best-practices",
-      "license": "MIT upstream; local derivative requires separate review",
-      "installation": "Review upstream terms and pin an exact revision before acquisition",
+      "license": "MIT declared in upstream frontmatter; the pinned tree has no separate license file",
+      "installation": "Review exact source and applicable legal terms using the native installer; no automatic bundle",
       "agents": [
         "codex",
         "claude",
@@ -469,14 +578,15 @@
         "linux",
         "macos"
       ],
-      "evidence": "Publisher source and corresponding local name reviewed; exact content equivalence unverified",
+      "evidence": "Local provenance records the exact upstream revision and adapted files. Full upstream runtime evaluation remains pending.",
       "dependencies": [
         "React/Next.js project"
       ],
       "conflicts": [],
       "trust": "Upstream reference; candidate review required",
       "status": "REFERENCE",
-      "verified": "2026-11-26"
+      "verified": "2026-11-26",
+      "version": "063bee94c3f4df8453406c830b0a7df0f2860278"
     },
     {
       "id": "winui-app",
@@ -564,6 +674,168 @@
       "conflicts": [],
       "trust": "Independent local asset; do not redistribute",
       "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "playwright",
+      "name": "playwright",
+      "category": "Runtime Verification",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "browser-runtime-verification"
+      ],
+      "triggers": "Use a browser CLI to inspect and verify a real web interaction.",
+      "non_goals": "Ordinary edits already covered by native project tooling.",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "dependencies": [
+        "Node.js and the installed Playwright browser runtime"
+      ],
+      "conflicts": [],
+      "evidence": "Publisher bundle files read and hash-pinned; functional runtime evaluation remains separate.",
+      "trust": "Pinned upstream review lane with executable content.",
+      "source": "https://github.com/openai/skills",
+      "source_path": "skills/.curated/playwright",
+      "license": "Apache-2.0",
+      "installation": "stage-reference playwright; isolated review, native adapter after authorization",
+      "pin": {
+        "repo": "openai/skills",
+        "commit": "49f948faa9258a0c61caceaf225e179651397431",
+        "lane": "review-only",
+        "license_file": "LICENSE.txt",
+        "files": {
+          "LICENSE.txt": {
+            "path": "skills/.curated/playwright/LICENSE.txt",
+            "sha256": "9a7110fc2d2f964038e5dc49128f908f29f47a574c961cba16085914e879cbda"
+          },
+          "NOTICE.txt": {
+            "path": "skills/.curated/playwright/NOTICE.txt",
+            "sha256": "417d5d3372914ecfd9fe102ac1d7dc2119253209f9718d6c222f616876c1904b"
+          },
+          "SKILL.md": {
+            "path": "skills/.curated/playwright/SKILL.md",
+            "sha256": "0ffaabcc8e0990627c4725f18bf1c7955534a796c1c199e872909de2013ce6a8"
+          },
+          "agents/openai.yaml": {
+            "path": "skills/.curated/playwright/agents/openai.yaml",
+            "sha256": "ddda43720fc566fffa45264be8f17f7745a3cee28d5245d41d3b963bc9967230"
+          },
+          "assets/playwright-small.svg": {
+            "path": "skills/.curated/playwright/assets/playwright-small.svg",
+            "sha256": "f1d213c0f76735d8272c3d3e9fbf71fe7b894e2d1588907044c780f2c33a9732"
+          },
+          "assets/playwright.png": {
+            "path": "skills/.curated/playwright/assets/playwright.png",
+            "sha256": "521669f088c838196c6c852ccc9abdd7234d8f37fc9a8a7a9af7db2d50193381"
+          },
+          "references/cli.md": {
+            "path": "skills/.curated/playwright/references/cli.md",
+            "sha256": "7c069a8206ba20b9ddbdc42436b04de30bb3aa4a825ba98680757ee62e954900"
+          },
+          "references/workflows.md": {
+            "path": "skills/.curated/playwright/references/workflows.md",
+            "sha256": "a2b5835a00ebee3906c146adf7f764f7718ea3f89a8702d86eaa135dfe0fc8c2"
+          },
+          "scripts/playwright_cli.sh": {
+            "path": "skills/.curated/playwright/scripts/playwright_cli.sh",
+            "sha256": "aa3fdff5d0e4556177f4dfd5f04117e772aa54f94b6a2e34b6c0edf629c6b9b5"
+          }
+        }
+      },
+      "status": "REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "jupyter-notebook",
+      "name": "jupyter-notebook",
+      "category": "AI/ML & Research",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "notebook-engineering"
+      ],
+      "triggers": "Create or maintain a runnable notebook with a reproducible structure.",
+      "non_goals": "Ordinary edits already covered by native project tooling.",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "dependencies": [
+        "Python and the project notebook runtime"
+      ],
+      "conflicts": [],
+      "evidence": "Publisher bundle files read and hash-pinned; functional runtime evaluation remains separate.",
+      "trust": "Pinned upstream review lane with executable content.",
+      "source": "https://github.com/openai/skills",
+      "source_path": "skills/.curated/jupyter-notebook",
+      "license": "Apache-2.0",
+      "installation": "stage-reference jupyter-notebook; isolated review, native adapter after authorization",
+      "pin": {
+        "repo": "openai/skills",
+        "commit": "49f948faa9258a0c61caceaf225e179651397431",
+        "lane": "review-only",
+        "license_file": "LICENSE.txt",
+        "files": {
+          "LICENSE.txt": {
+            "path": "skills/.curated/jupyter-notebook/LICENSE.txt",
+            "sha256": "4dd13869245e356246a5b770723247bbb80a8f07a181d1d3d873a1734297cdb9"
+          },
+          "SKILL.md": {
+            "path": "skills/.curated/jupyter-notebook/SKILL.md",
+            "sha256": "62f102e8554b25716dccef0ffab4572d4e3eaf05ccc76562d33a065bc9c521fb"
+          },
+          "agents/openai.yaml": {
+            "path": "skills/.curated/jupyter-notebook/agents/openai.yaml",
+            "sha256": "3a2d6a8f9ed10e18f6caa66aeb26a02305bc61f36fc4b333c904e02f9988fb9c"
+          },
+          "assets/experiment-template.ipynb": {
+            "path": "skills/.curated/jupyter-notebook/assets/experiment-template.ipynb",
+            "sha256": "25f85914103cd84244e20ef378f59097479c72481cd18d3a931354d107c3f300"
+          },
+          "assets/jupyter-small.svg": {
+            "path": "skills/.curated/jupyter-notebook/assets/jupyter-small.svg",
+            "sha256": "a36bd27bef3775f111309241754b386db81e7d356f07672190e2fcb24478a250"
+          },
+          "assets/jupyter.png": {
+            "path": "skills/.curated/jupyter-notebook/assets/jupyter.png",
+            "sha256": "852fd5468885bb176d266d547e61684792332e44a88cfbc8cd07323937040ccb"
+          },
+          "assets/tutorial-template.ipynb": {
+            "path": "skills/.curated/jupyter-notebook/assets/tutorial-template.ipynb",
+            "sha256": "704a809c09c7c9e6e5c437860df95524412b50c58571a14204610d73e0744765"
+          },
+          "references/experiment-patterns.md": {
+            "path": "skills/.curated/jupyter-notebook/references/experiment-patterns.md",
+            "sha256": "1ff9c04281c01e8e2209bde9f1fd910b8e4b620dd1f1f040e2101f1d88513a91"
+          },
+          "references/notebook-structure.md": {
+            "path": "skills/.curated/jupyter-notebook/references/notebook-structure.md",
+            "sha256": "a85051a2e88fd3424bbed2636e952ec5f858e7efa4e076c28d62a8cc2cc9dc06"
+          },
+          "references/quality-checklist.md": {
+            "path": "skills/.curated/jupyter-notebook/references/quality-checklist.md",
+            "sha256": "ed01afe6ff47714d85935d11053b64c414772f02250fdc604e3fca65e5139136"
+          },
+          "references/tutorial-patterns.md": {
+            "path": "skills/.curated/jupyter-notebook/references/tutorial-patterns.md",
+            "sha256": "8c194bb640de2fb7747e3db87006ecec5219252d301f53670975dbb5310ff659"
+          },
+          "scripts/new_notebook.py": {
+            "path": "skills/.curated/jupyter-notebook/scripts/new_notebook.py",
+            "sha256": "a004e2ea3115edb24313928be0be6d1dc07e571d7ca6c1b24375f0569c616d2f"
+          }
+        }
+      },
+      "status": "REFERENCE",
       "verified": "2026-11-26"
     }
   ]

@@ -83,6 +83,9 @@ def args_for_cli():
     command.add_argument('--skill-path', required=True)
     command.add_argument('--license-path', default='LICENSE')
     command.add_argument('--local', type=Path, help='An inert local copy of the same reviewed source')
+    command = commands.add_parser('stage-reference')
+    command.add_argument('id')
+    command.add_argument('--activate', action='store_true', help='Apply only an exact pre-existing Markdown approval')
     command = commands.add_parser('activate', aliases=['update'])
     command.add_argument('id')
     command.add_argument('sha256')
@@ -123,10 +126,14 @@ def stage_candidate(args, root):
     else:
         payload = candidate.acquire(args.repo, args.commit, args.skill_path, args.license_path)
     sha = candidate.review_payload(name, payload)
-    path = root / 'staged' / name / sha
-    check_path(path / 'receipt.json')
     receipt = {'id': name, 'sha256': sha, 'source': source, 'license_path': license_path,
                'transport': 'local' if args.local else 'github', 'state': 'STAGED'}
+    return save_stage(root, payload, receipt)
+
+
+def save_stage(root, payload, receipt):
+    path = root / 'staged' / receipt['id'] / receipt['sha256']
+    check_path(path / 'receipt.json')
     if path.exists():
         existing = read_json(path / 'receipt.json')
         if existing != receipt or files(path / 'payload') != payload:
@@ -135,6 +142,36 @@ def stage_candidate(args, root):
     staged = {f'payload/{p}': value for p, value in payload.items()}
     staged['receipt.json'] = encode(receipt)
     transact(root, [(path, None, staged)])
+    return receipt
+
+
+def stage_reference(args, root, source, state, settings):
+    row = catalog.catalog(source / 'adaptive-skills-kit').get(exact_id(args.id), {})
+    pin = row.get('pin')
+    if not pin or row['tier'] in {'CORE', 'DEPRECATED', 'QUARANTINED'}:
+        raise ValueError('No eligible portable bundle pin for this reference')
+    if args.activate and (pin['lane'] != 'markdown' or settings['mode'] != 'TRUSTED_AUTO'):
+        raise ValueError('Reference activation requires a Markdown pin and TRUSTED_AUTO')
+    source_url = f"{row['source']}/tree/{pin['commit']}/{row['source_path']}"
+    sha = digest(encode({name: item['sha256'] for name, item in pin['files'].items()}))
+    receipt = {'id': args.id, 'sha256': sha, 'source': source_url, 'state': 'STAGED',
+               'transport': 'pinned-reference', 'lane': pin['lane'],
+               'license_path': pin['files'][pin['license_file']]['path']}
+    if args.activate:
+        if state is None:
+            raise ValueError('Global bootstrap required before activation')
+        candidate.require_approval(settings, receipt, state['adapters'], PLATFORM)
+    cached = root / 'staged' / args.id / sha / 'payload'
+    check_path(cached)
+    payload = files(cached) if cached.is_dir() else candidate.acquire_pinned(pin)
+    if {name: digest(data) for name, data in payload.items()} != {name: item['sha256'] for name, item in pin['files'].items()}:
+        raise ValueError('Staged reference differs from the exact lock')
+    if pin['lane'] == 'markdown':
+        candidate.review_payload(args.id, payload)
+    save_stage(root, payload, receipt)
+    if args.activate:
+        update = argparse.Namespace(command='activate', id=args.id, sha256=sha)
+        return skill_change(update, root, state, settings)
     return receipt
 
 
@@ -161,6 +198,8 @@ def skill_change(args, root, state, settings):
         path = root / 'staged' / name / args.sha256
         check_path(path / 'receipt.json')
         receipt = read_json(path / 'receipt.json')
+        if receipt.get('lane') == 'review-only':
+            raise ValueError('Reference bundle is limited to isolated review')
         payload = files(path / 'payload')
         if receipt.get('id') != name or receipt.get('sha256') != args.sha256 or candidate.review_payload(name, payload) != args.sha256:
             raise ValueError('Candidate identity or staged content drift')
@@ -294,6 +333,10 @@ def lifecycle(args, root, home, source):
         if settings['mode'] == 'OFF':
             raise ValueError('Acquisition disabled by policy')
         output(stage_candidate(args, root))
+    elif args.command == 'stage-reference':
+        if settings['mode'] == 'OFF':
+            raise ValueError('Acquisition disabled by policy')
+        output(stage_reference(args, root, source, state, settings))
     elif args.command in ('activate', 'update', 'archive', 'disable'):
         output(skill_change(args, root, state, settings))
     elif args.command == 'feedback':

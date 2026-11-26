@@ -1,5 +1,12 @@
 # Changelog
 
+## Project lifecycle and portable references
+
+- Inspect Git topology and reconcile selected upstream and downstream changes in owned detached worktrees.
+- Gate native deployment on candidate, artifact and runtime verification, with recoverable rollback.
+- Archive clean released worktrees and retain repository-local checkpoints and evidence-backed knowledge.
+- Fetch selected pinned publisher bundles into isolated review, preserving exact per-file hashes and existing activation gates.
+
 ## vNext
 
 - Add Adaptive Skills Kit with a curated registry, generated reference, and exact CORE content locks.

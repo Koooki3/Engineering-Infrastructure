@@ -29,11 +29,13 @@ Open a fresh agent session in a project and check the three CORE Skills. See [BO
 
 | Kit | Role |
 | --- | --- |
-| [Engineering Workflow](engineering-workflow-kit/README.md) | Risk routing, evidence capture, regression verification and implementation review |
+| [Engineering Workflow](engineering-workflow-kit/README.md) | Risk routing, evidence capture, repository synchronization, integration, deployment and workspace governance |
 | [Adaptive Skills](adaptive-skills-kit/README.md) | Inventory, local-first capability resolution, controlled acquisition, activation and retirement |
 | [PR Authoring](pr-authoring-kit/README.md) | Upstream-aware PR composition and body lint |
 
 [Skills reference](adaptive-skills-kit/skills%20reference.md) is generated from the registry and bundled locks. Machine plans, receipts, private inventory, and rollback data live outside the repository. Project-level instructions and build processes continue to apply.
+
+Substantive Git work starts with a local lifecycle inspection. Integration and deployment use explicit commit inputs and an authorized project-native contract. Use the [repository and workspace lifecycle](engineering-workflow-kit/engineering-workflow/references/lifecycle.md) to reconcile versions, verify the running instance and retain project-local checkpoints.
 
 ## Verification
 

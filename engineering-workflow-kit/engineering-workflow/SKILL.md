@@ -29,6 +29,8 @@ description: 实质性工程任务（新功能、非平凡缺陷修复、重构�
 
 Discover → Define → Reproduce/Baseline → Design → Implement → Verify → Review → Deliver → Learn。出口条件与回退路径见 `references/workflow.md`。Fast 可合并阶段，但不得跳过 Verify。
 
+实质 Git 工程任务开始或恢复时，从当前项目运行本技能的 `scripts/lifecycle.py inspect --event start`（恢复时使用 `resume`），读取工作树和跟踪分支并判断同步需求。准备集成、部署或 PR 时刷新相关远端并锁定输入，任务结束时复查受管工作树、交接和经验。详见 [仓库与工作空间生命周期](references/lifecycle.md)。Fast 路径仅取适用的本地检查。
+
 Define / Design 阶段遇到实际能力缺口时，调用 `adaptive-skills` 解析并组合当前阶段所需能力。优先使用项目或 Agent 原生工具。在 Verify 阶段检查新增能力的真实结果。在 Learn 阶段只沉淀会改变决策的反馈。GitHub PR 的准备与交付由 `pr-authoring` 负责。
 
 ## 4. 不可妥协项

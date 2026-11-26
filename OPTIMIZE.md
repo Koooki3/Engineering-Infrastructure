@@ -8,6 +8,8 @@ Run these workflows when a project reveals a capability gap, verification regres
 4. Compare before and after behavior on a relevant task. Record actual results with `feedback` or project evidence. Separate installation, discovery, invocation and verification. Roll back when integrity, compatibility or behavior regresses.
 5. Consolidate reusable lessons in the owning skill, interface, test or reference. Keep project-specific evidence in that project. Review catalog generation with `sync-reference --check` before shipping a change.
 
+For project maintenance, use the [repository lifecycle](engineering-workflow-kit/engineering-workflow/references/lifecycle.md) to check stale inputs and runtime drift, then review owned worktree release, handoff checkpoints and evidence-backed knowledge.
+
 Retain rollback snapshots until their dependencies are understood and recovery is no longer needed. Archive decisions require a dependency and active-task review. Leave standalone user assets and platform configuration under their existing ownership.
 
 [Project verification commands](README.md#verification) · [Bootstrap and recovery](BOOTSTRAP.md)

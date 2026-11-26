@@ -20,10 +20,12 @@ python tools/setup.py verify
 
 | Kit | 职责 |
 | --- | --- |
-| [Engineering Workflow](engineering-workflow-kit/README.md) | 工程风险分层、可执行验证、证据绑定和交付复核 |
+| [Engineering Workflow](engineering-workflow-kit/README.md) | 工程风险分层、证据绑定、仓库同步、集成部署、工作树与知识治理 |
 | [Adaptive Skills](adaptive-skills-kit/README.md) | 能力解析、本机盘点、按需发现及受控部署、升级和归档 |
 | [PR Authoring](pr-authoring-kit/README.md) | 遵守上游政策的 PR 编写及正文校验 |
 
 [Skills 参考目录](adaptive-skills-kit/skills%20reference.md) 由注册表和版本锁生成。部署状态、私人盘点、回滚备份和反馈留在机器本地。默认获取模式为 `REPORT_ONLY`，激活第三方能力需事先配置明确的范围和内容指纹授权。
+
+实质 Git 任务启动或恢复时先检查当前仓库。按项目授权建立固定提交的集成候选，并用项目原生构建、测试、安装和探针验证实际运行版本。详见[仓库与工作空间生命周期](engineering-workflow-kit/engineering-workflow/references/lifecycle.md)。
 
 [验证命令](README.md#verification) · [本轮验证记录](engineering-workflow-kit/reports/vnext.md) · [图稿](docs/diagrams) · [变更记录](CHANGELOG.md) · [Apache-2.0](LICENSE)

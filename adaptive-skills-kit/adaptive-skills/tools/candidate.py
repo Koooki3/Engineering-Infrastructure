@@ -1,5 +1,6 @@
 """Bounded, inert acquisition and review of exact Markdown-only candidates."""
 
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 import io
 import json
@@ -10,7 +11,7 @@ from urllib.parse import quote, urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from catalog import ID, metadata
-from store import atomic, encode, fingerprint, read_json
+from store import digest, fingerprint, read_json
 
 
 GATES = {'provenance', 'license', 'instructions', 'permissions', 'compatibility', 'functional', 'rollback'}
@@ -49,7 +50,8 @@ def public_search(query):
 
 
 def source_path(value):
-    if not value or any(not re.fullmatch(r'[A-Za-z0-9_.-]+', part) or part in {'.', '..'}
+    if not value or any(not re.fullmatch(r'[A-Za-z0-9_.-]+', part) or part.endswith('.')
+                        or re.fullmatch(r'(?:con|prn|aux|nul|com[1-9]|lpt[1-9])', part.split('.')[0], re.I)
                         for part in value.split('/')):
         raise ValueError('Source must be a repository-relative path')
     return quote(value, safe='/')
@@ -63,11 +65,46 @@ def acquire(repo, commit, skill_path, license_path):
             'LICENSE': fetch(base + source_path(license_path))}
 
 
+def acquire_pinned(pin):
+    base = f"https://raw.githubusercontent.com/{pin['repo']}/{pin['commit']}/"
+    payload = {}
+    jobs = iter(pin['files'].items())
+    deadline = time.monotonic() + 45
+    total = 0
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        def start():
+            entry = next(jobs, None)
+            if entry is None:
+                return None
+            name, item = entry
+            return pool.submit(fetch, base + source_path(item['path'])), (name, item['sha256'])
+
+        pending = dict(item for item in (start() for _ in range(5)) if item)
+        while pending:
+            completed, _ = wait(pending, timeout=max(0, deadline - time.monotonic()), return_when=FIRST_COMPLETED)
+            if not completed:
+                raise TimeoutError('Pinned bundle acquisition exceeded its deadline')
+            for future in completed:
+                name, wanted = pending.pop(future)
+                data = future.result()
+                if digest(data) != wanted:
+                    raise ValueError(f'Pinned source digest mismatch: {name}')
+                total += len(data)
+                if total > 4_000_000:
+                    raise ValueError('Pinned bundle exceeds total size budget')
+                payload[name] = data
+                item = start()
+                if item:
+                    pending[item[0]] = item[1]
+    return payload
+
+
 def review_payload(name, payload):
-    if not ID.fullmatch(name) or set(payload) != {'SKILL.md', 'LICENSE'}:
+    if not ID.fullmatch(name) or set(payload) not in ({'SKILL.md', 'LICENSE'}, {'SKILL.md', 'LICENSE.txt'}):
         raise ValueError('Automatic activation supports only SKILL.md and LICENSE')
     metadata(payload['SKILL.md'], name)
-    body, license_text = (payload[key].decode('utf-8') for key in ('SKILL.md', 'LICENSE'))
+    body = payload['SKILL.md'].decode('utf-8')
+    license_text = payload['LICENSE' if 'LICENSE' in payload else 'LICENSE.txt'].decode('utf-8')
     if len(body) > 64_000 or not license_text.strip() or len(license_text) > 32_000:
         raise ValueError('Candidate content or license exceeds bounds')
     if re.search(r'\b(ignore (all |any |the )?(previous|prior) instructions|disable (the )?sandbox|'

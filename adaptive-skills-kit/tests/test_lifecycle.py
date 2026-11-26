@@ -228,6 +228,37 @@ class Lifecycle(unittest.TestCase):
         self.assertEqual(set(core), global_setup.CORE)
         self.assertIn('OPTIMIZE.md', bundle)
 
+    def test_pinned_references_do_not_publish_without_exact_approval(self):
+        self.apply()
+        name = 'portable-markdown'
+        payload = {'SKILL.md': b'---\nname: portable-markdown\ndescription: reviewed fixture\n---\nUse a test.\n',
+                   'LICENSE.txt': b'fixture'}
+        row = {'source': 'https://github.com/owner/repo', 'source_path': 'skills/portable-markdown',
+               'tier': 'DOMAIN', 'pin': {'repo': 'owner/repo', 'commit': 'a' * 40, 'lane': 'markdown',
+                                        'license_file': 'LICENSE.txt',
+                                        'files': {p: {'path': 'skills/portable-markdown/' + p,
+                                                      'sha256': store.digest(data)} for p, data in payload.items()}}}
+        with patch.object(catalog, 'catalog', return_value={name: row}), patch.object(candidate, 'fetch') as fetch:
+            fetch.side_effect = lambda url: payload[url.rsplit('/', 1)[1]]
+            self.assertIn('TRUSTED_AUTO', self.cli('stage-reference', name, '--activate', code=1))
+            self.assertEqual(fetch.call_count, 0)
+            receipt = self.cli('stage-reference', name)
+            self.assertEqual(fetch.call_count, 2)
+            self.assertFalse((self.home / '.agents/skills' / name).exists())
+            self.approve(receipt)
+            active = self.cli('stage-reference', name, '--activate')
+            self.assertEqual(active['state'], 'ACTIVE')
+            self.assertEqual(fetch.call_count, 2)
+            self.assertEqual((self.home / '.agents/skills' / name / 'LICENSE.txt').read_bytes(), payload['LICENSE.txt'])
+
+    def test_reference_bundle_digest_mismatch_and_review_only(self):
+        row = catalog.catalog(SOURCE / 'adaptive-skills-kit')['gh-fix-ci']
+        with patch.object(candidate, 'fetch', return_value=b'incorrect'):
+            self.assertIn('digest mismatch', self.cli('stage-reference', 'gh-fix-ci', code=1))
+        self.assertFalse((self.state / 'staged').exists())
+        self.assertEqual(row['pin']['lane'], 'review-only')
+        self.assertIn('Markdown pin', self.cli('stage-reference', 'gh-fix-ci', '--activate', code=1))
+
     def test_pr_body_lint_positive_and_private_path_rejection(self):
         tool = SOURCE / 'pr-authoring-kit/pr-authoring/tools/lint_pr_body.py'
         body = self.base / 'body.md'

@@ -9,3 +9,5 @@ python pr-authoring/tools/lint_pr_body.py --title "feat: add a verified engineer
 ```
 
 Use `--upstream-english-only` when required. Review claims against real evidence and obtain publication authority independently of lint.
+
+For a live PR, confirm the actual target and merge base with the [repository lifecycle](../engineering-workflow-kit/engineering-workflow/references/lifecycle.md). Keep local combined integration worktrees separate from the proposed PR's actual head and diff.

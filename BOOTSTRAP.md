@@ -29,6 +29,8 @@ The local runtime is the canonical deployed snapshot. Adapters receive hash-veri
 
 ## 3. Test inheritance
 
+In a new session, start a substantive task in a disposable Git repository. Confirm that the agent runs the installed repository inspection before proposing implementation. The [project lifecycle](engineering-workflow-kit/engineering-workflow/references/lifecycle.md) covers optional integration, native deployment and recovery.
+
 From a clean directory with no per-project setup, open a new session, confirm the CORE names and run a small engineering task. Capture real discovery, skill use, and successful evidence tooling separately. Repeat for a representative project. Windows and WSL configurations are independent and need separate filesystem checks.
 
 ## Recovery
