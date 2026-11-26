@@ -45,6 +45,8 @@ Create `policy.json` yourself under the native state root. Default `REPORT_ONLY`
 
 Approval is a user-owned attestation. Static checks reject unsafe structure and selected patterns. Review for indirect instructions and unsafe behavior even in prose. The supported automatic lane is `SKILL.md` and `LICENSE` only. Skills needing scripts, hooks, MCP, dependencies, asset bundles or restricted licenses require an independent, authorized install and evaluation. Keep rejected or unapproved material outside the discovery paths.
 
+For a one-time approval, use one source, one exact staged digest, the smallest Agent and OS scope, and a short expiry. An isolated `--home` and `--state` let you validate or roll back a reference without altering a user's active skills. Configure any Agent-home environment overrides to point into the test home before applying. Verify the consumed skill path in a fresh session, keep the transaction ID, and check discovery again after rollback. Expiry blocks future actions requiring that approval. Use rollback to remove an already active deployment.
+
 ## Update, archive and restore
 
 - `activate ID SHA256` performs a locked transaction. `update` uses the same command and requires an approval for the new hash. Review differences and run isolated evals before approving. The manager preserves the current version when preflight or activation fails.

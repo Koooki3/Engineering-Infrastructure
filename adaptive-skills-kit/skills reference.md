@@ -106,7 +106,7 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Trust** Bundled core
 - **Status** BUNDLED
 - **Verified** 2026-11-26
-- **Version** `2def62fd675ec3db4ed6ef03c71dd801cdd5c0d82b705ab711a0b276a484f618`
+- **Version** `281d799079d8d560fd5925be2c7e55efbf4925f35f17d9a15f65ed807a9f2183`
 
 ## team-mode
 

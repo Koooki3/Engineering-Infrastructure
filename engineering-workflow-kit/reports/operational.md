@@ -37,3 +37,11 @@ Windows and WSL verified the same distribution fingerprint `ac6cf2c7870770bba70c
 | Windows Antigravity | Integrity verified | Session invocation was deferred because the reported weekly quota was exhausted. |
 
 The native project tests used a temporary installation of Skill Loom. Other software deployments depend on their own authorized contract and independent probe. The source and release CI remain the portable verification entry points. The workstation retains rollback history and local evidence.
+
+## Readiness follow-up
+
+Reproduced standalone runtime reporting `CURRENT` after changing a declared external input while the deployed artifact stayed healthy and the Git refs stayed unchanged. Regression coverage checks external drift after worktree archival, simultaneous Git and build drift, and unavailable checkout-specific inputs. The delivery gate blocks a stale or unverified build.
+
+Resolved `frontend-design` through the catalog, staged the exact Apache-2.0 Markdown bundle, and reviewed both files. With explicit one-time user approval, used `TRUSTED_AUTO` for that digest in a disposable Windows Codex workspace with an expiring policy. Codex discovered and read the installed project Skill in a new session and completed the representative design-planning task. The rollback removed the isolated entry and fresh discovery confirmed its absence. The regular Windows and WSL states use `REPORT_ONLY`.
+
+Claude Code and Antigravity retain the authentication and quota findings above. Further project and Agent checks belong to normal engineering work.

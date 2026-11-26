@@ -427,7 +427,7 @@ def contract_signature(contract):
     return hashlib.sha256(json.dumps(contract, sort_keys=True).encode()).hexdigest()
 
 
-def verification_inputs(cwd, contract, submodules):
+def verification_facts(cwd, contract, submodules, absolute_only=False):
     paths = {Path(item) for item in contract.get('verification_files', [])}
     for stage in ('build', 'test', 'install', 'probe', 'stop'):
         argv = contract[stage]
@@ -435,13 +435,68 @@ def verification_inputs(cwd, contract, submodules):
         for token in argv[1:]:
             path = Path(token)
             if Path(path).suffix.lower() in {'.py', '.ps1', '.sh', '.js', '.mjs', '.bat', '.cmd'}:
-                if (cwd / path).is_file():
+                if (not absolute_only or path.is_absolute()) and (cwd / path).is_file():
                     paths.add(path)
-    facts = {'files': {str(path): digest((cwd / path).resolve(strict=True)) for path in paths},
-             'env': {key: os.environ.get(key) for key in contract.get('verification_env', [])},
-             'git': string(git(cwd, '--version')), 'python': sys.version, 'submodules': submodules,
-             'contract': contract_signature(contract)}
-    return contract_signature(facts)
+    return {'files': {str(path): digest((cwd / path).resolve(strict=True)) for path in paths
+                      if not absolute_only or path.is_absolute()},
+            'env': {key: os.environ.get(key) for key in contract.get('verification_env', [])},
+            'git': string(git(cwd, '--version')), 'python': sys.version, 'submodules': submodules,
+            'contract': contract_signature(contract)}
+
+
+def verification_inputs(cwd, contract, submodules):
+    return contract_signature(verification_facts(cwd, contract, submodules))
+
+
+def build_check(cwd, facts):
+    absolute = {path: signature for path, signature in facts['files'].items() if Path(path).is_absolute()}
+    relative = set(facts['files']) - set(absolute)
+    checkout_needed = bool(relative or facts['submodules'])
+    portable = True
+    if relative:
+        tracked = set(git(cwd, 'ls-files', '-z').decode('utf-8', errors='surrogateescape').split('\0'))
+        root = cwd.resolve()
+        for path in relative:
+            resolved = (cwd / path).resolve()
+            portable &= (resolved.is_relative_to(root) and Path(path).as_posix() in tracked
+                         and resolved.relative_to(root).as_posix() in tracked)
+    return {'external': contract_signature({**facts, 'files': absolute, 'submodules': []}),
+            'checkout': str(cwd) if checkout_needed else None, 'portable': portable}
+
+
+def build_freshness(cwd, contract, stable, tree=None):
+    check = stable.get('build_check')
+    if not check:
+        return 'UNVERIFIED'
+    try:
+        observed = verification_facts(cwd, contract, [], absolute_only=True)
+        if contract_signature(observed) != check['external']:
+            return 'STALE'
+    except FileNotFoundError:
+        return 'STALE'
+    except (OSError, ValueError):
+        return 'UNVERIFIED'
+    if not check['checkout']:
+        return 'CURRENT'
+    original = Path(check['checkout'])
+    candidates = [original]
+    if check['portable']:
+        candidates.extend([tree, cwd])
+    for candidate_dir in dict.fromkeys(path for path in candidates if path is not None):
+        if not candidate_dir.is_dir():
+            continue
+        root = optional(candidate_dir, 'rev-parse', '--show-toplevel')
+        if root is None or Path(root).resolve() != candidate_dir.resolve():
+            continue
+        artifact = candidate_dir / contract['artifact']
+        if state_id(str(candidate_dir), exclude=(str(artifact),)) != stable['sha']:
+            continue
+        try:
+            inputs = verification_inputs(candidate_dir, contract, submodule_status(candidate_dir))
+            return 'CURRENT' if inputs == stable['build_inputs'] else 'STALE'
+        except (OSError, ValueError):
+            continue
+    return 'UNVERIFIED'
 
 
 def version_record(state, receipt):
@@ -500,13 +555,15 @@ def deploy(cwd, state, task):
     before = state_id(str(tree), exclude=(str(artifact),))
     if any(line[:1] in {'-', '+', 'U'} for line in submodules) or before != sha:
         raise ValueError('Initialize the pinned submodules and use a clean candidate')
-    inputs = verification_inputs(tree, contract, submodules)
+    facts = verification_facts(tree, contract, submodules)
+    inputs = contract_signature(facts)
+    check = build_check(tree, facts)
     if stable and stable['sha'] == sha and stable.get('build_inputs') == inputs:
         validate_pins(cwd, task)
         action = 'REUSED'
-        if stable.get('pins') != task['pins']:
+        if stable.get('pins') != task['pins'] or stable.get('build_check') != check:
             stable = {**stable, 'pins': task['pins'], 'record_id': uuid.uuid4().hex,
-                      'reconciled_utc_epoch': time.time(), 'observed': observed}
+                      'build_check': check, 'reconciled_utc_epoch': time.time(), 'observed': observed}
             save(version_record(state, stable), stable)
             save(stable_path, stable)
             action = 'RECONCILED'
@@ -523,7 +580,7 @@ def deploy(cwd, state, task):
     receipt = {'sha': sha, 'artifact': store_artifact(state, artifact, checksum), 'sha256': checksum, 'pins': task['pins'],
                'verified_state': before, 'submodules': submodules, 'git': string(git(tree, '--version')),
                'python': sys.version.split()[0], 'utc_epoch': time.time(), 'contract_signature': contract_signature(contract),
-               'record_id': uuid.uuid4().hex, 'build_inputs': inputs,
+               'record_id': uuid.uuid4().hex, 'build_inputs': inputs, 'build_check': check,
                'previous': {key: stable[key] for key in ('sha', 'sha256', 'record_id') if key in stable}
                if stable else None}
     save(pending_path, {'schema': 1, 'stable': stable, 'candidate': receipt, 'contract': contract, 'cwd': str(tree)})
@@ -651,11 +708,8 @@ def delivery_gate(cwd, state, args, task):
     if args.runtime:
         try:
             stable = mapping(state / 'stable.json')
-            observed = runtime_status(cwd, state)
+            observed = runtime_status(cwd, state, tree)
             match = not task or (stable and stable['sha'] == task['candidate_sha'] and stable['pins'] == task['pins'])
-            if match and tree:
-                contract = project_contract(state)
-                match = stable.get('build_inputs') == verification_inputs(tree, contract, submodule_status(tree))
             checks['runtime'] = 'PASS' if observed.get('freshness') == 'CURRENT' and match else 'BLOCKED'
         except (OSError, ValueError):
             checks['runtime'] = 'BLOCKED'
@@ -669,7 +723,7 @@ def delivery_gate(cwd, state, args, task):
             'PASS' if 'PASS' in checks.values() else 'NOT_APPLICABLE', 'checks': checks}
 
 
-def runtime_status(cwd, state):
+def runtime_status(cwd, state, tree=None):
     contract = project_contract(state)
     stable = mapping(state / 'stable.json')
     if (state / 'pending.json').exists():
@@ -681,6 +735,13 @@ def runtime_status(cwd, state):
     result = probe(contract, cwd, stable) if contract else {'status': 'NOT_APPLICABLE'}
     if stable:
         result.update(freshness(cwd, stable))
+        result['git_freshness'] = result['freshness']
+        result['build_freshness'] = build_freshness(cwd, contract, stable, tree)
+        if result['freshness'] != 'STALE_INPUTS':
+            if result['build_freshness'] == 'STALE':
+                result['freshness'] = 'STALE_BUILD_INPUTS'
+            elif result['build_freshness'] == 'UNVERIFIED':
+                result['freshness'] = 'UNVERIFIED_BUILD_INPUTS'
     return result
 
 

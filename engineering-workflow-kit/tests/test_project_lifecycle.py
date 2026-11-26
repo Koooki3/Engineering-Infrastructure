@@ -204,6 +204,48 @@ class ProjectLifecycle(unittest.TestCase):
         self.assertNotEqual(first['build_inputs'], refreshed['build_inputs'])
         self.assertNotEqual(refreshed['previous']['record_id'], refreshed['record_id'])
 
+    def test_runtime_distinguishes_external_input_drift_after_archive(self):
+        self.setup_contract()
+        dependency = self.root / 'toolchain.lock'
+        dependency.write_text('initial', encoding='utf-8')
+        contract_path = self.state / 'contract.json'
+        contract = json.loads(contract_path.read_bytes())
+        contract['verification_files'] = [str(dependency)]
+        contract_path.write_text(json.dumps(contract), encoding='utf-8')
+        self.prepare('release')
+        release = self.cli('deploy', 'release')
+        (self.root / 'release/artifact.json').unlink()
+        self.cli('cleanup', 'release', '--released', '--apply')
+        self.assertEqual(self.cli('runtime')['freshness'], 'CURRENT')
+        dependency.write_text('changed', encoding='utf-8')
+        actual = self.cli('runtime')
+        self.assertTrue(actual['healthy'])
+        self.assertEqual(actual['sha256'], release['sha256'])
+        self.assertEqual(actual['freshness'], 'STALE_BUILD_INPUTS')
+        self.assertEqual(actual['git_freshness'], 'CURRENT')
+        self.assertEqual(actual['build_freshness'], 'STALE')
+        self.cli('gate', '--runtime', blocked=True)
+        self.write('later', 'moving Git input')
+        self.add('advance Git while build is stale')
+        both = self.cli('runtime')
+        self.assertEqual((both['git_freshness'], both['build_freshness']), ('STALE_INPUTS', 'STALE'))
+
+    def test_runtime_reports_unverified_for_unavailable_checkout_inputs(self):
+        self.setup_contract()
+        dependency = self.root / 'worktree-neighbor.lock'
+        dependency.write_text('site input', encoding='utf-8')
+        path = self.state / 'contract.json'
+        contract = json.loads(path.read_bytes())
+        contract['verification_files'] = ['../worktree-neighbor.lock']
+        path.write_text(json.dumps(contract), encoding='utf-8')
+        self.prepare('site')
+        self.cli('deploy', 'site')
+        self.assertEqual(self.cli('runtime')['build_freshness'], 'CURRENT')
+        (self.root / 'site/artifact.json').unlink()
+        self.cli('cleanup', 'site', '--released', '--apply')
+        self.assertEqual(self.cli('runtime')['freshness'], 'UNVERIFIED_BUILD_INPUTS')
+        self.cli('gate', '--runtime', blocked=True)
+
     def test_git_mutations_preserve_project_hooks(self):
         self.git('switch', '-c', 'target')
         self.write('next', 'advance')
@@ -223,6 +265,9 @@ class ProjectLifecycle(unittest.TestCase):
         self.setup_contract()
         proposed = self.root / 'proposal.json'
         (self.state / 'contract.json').replace(proposed)
+        contract = json.loads(proposed.read_bytes())
+        contract['verification_files'] = ['pyproject.toml']
+        proposed.write_text(json.dumps(contract), encoding='utf-8')
         self.assertIn('pyproject.toml', self.cli('contract')['tracked_entrypoints'])
         args = ('contract', '--task', 'reviewed', '--from-json', str(proposed))
         self.assertEqual(self.cli(*args)['status'], 'PREVIEW')

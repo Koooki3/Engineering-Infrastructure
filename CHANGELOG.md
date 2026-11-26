@@ -1,5 +1,10 @@
 # Changelog
 
+## Runtime readiness
+
+- Distinguish Git input freshness from build input drift and missing verification evidence in live runtime and delivery checks.
+- Document exact, expiring approval and rollback for isolated Skills validation.
+
 ## Operational reliability
 
 - Honor project Git hooks and revalidate changed build inputs even when the candidate commit is unchanged.
