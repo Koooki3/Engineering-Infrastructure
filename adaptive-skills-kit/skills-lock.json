@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "sha256": {
+    "adaptive-skills": "d8a7b82e4164f2d7f0572ac6d1b72d4e3947aa4fc3e071b40431f2e7317ab562",
+    "engineering-workflow": "3915ad2418688674912dbb9fad9e86b33c6edb49182a33c6075c5ede1a7c540f",
+    "pr-authoring": "afd40bd953fdef409d52f9f7fc382c4791cb5b83ff42eeaf4e64def9e50f8acf"
+  }
+}

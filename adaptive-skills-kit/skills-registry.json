@@ -1,0 +1,570 @@
+{
+  "schema": 1,
+  "skills": [
+    {
+      "id": "engineering-workflow",
+      "name": "engineering-workflow",
+      "category": "Core Engineering",
+      "tier": "CORE",
+      "capabilities": [
+        "engineering-workflow",
+        "implementation",
+        "debugging",
+        "verification",
+        "risk-routing",
+        "quality-gates"
+      ],
+      "triggers": "Substantive implementation, bug fixes, verification and delivery.",
+      "non_goals": "Simple questions and domain-specific workflow rules.",
+      "source": "https://github.com/Koooki3/Engineering-Infrastructure",
+      "source_path": "engineering-workflow-kit/engineering-workflow",
+      "license": "Apache-2.0",
+      "installation": "Global bootstrap (bundled and hash-locked)",
+      "agents": [
+        "codex",
+        "claude",
+        "opencode",
+        "antigravity"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Bundled source and offline regression suite",
+      "dependencies": [
+        "Python 3.9+, Git for bound evidence"
+      ],
+      "conflicts": [],
+      "trust": "Bundled core",
+      "status": "BUNDLED",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "adaptive-skills",
+      "name": "adaptive-skills",
+      "category": "Skill Lifecycle",
+      "tier": "CORE",
+      "capabilities": [
+        "capability-resolution",
+        "skill-lifecycle",
+        "skill-review"
+      ],
+      "triggers": "A required capability is missing or needs replacement.",
+      "non_goals": "Routine work already covered by project tools.",
+      "source": "https://github.com/Koooki3/Engineering-Infrastructure",
+      "source_path": "adaptive-skills-kit/adaptive-skills",
+      "license": "Apache-2.0",
+      "installation": "Global bootstrap (bundled and hash-locked)",
+      "agents": [
+        "codex",
+        "claude",
+        "opencode",
+        "antigravity"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Bundled source and offline regression suite",
+      "dependencies": [
+        "Python 3.9+"
+      ],
+      "conflicts": [],
+      "trust": "Bundled core",
+      "status": "BUNDLED",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "pr-authoring",
+      "name": "pr-authoring",
+      "category": "Git & GitHub",
+      "tier": "CORE",
+      "capabilities": [
+        "pr-authoring",
+        "pull-request",
+        "pr-body-lint"
+      ],
+      "triggers": "Draft, update, review or validate a GitHub PR.",
+      "non_goals": "General Git questions and ordinary coding.",
+      "source": "https://github.com/Koooki3/Engineering-Infrastructure",
+      "source_path": "pr-authoring-kit/pr-authoring",
+      "license": "Apache-2.0",
+      "installation": "Global bootstrap (bundled and hash-locked)",
+      "agents": [
+        "codex",
+        "claude",
+        "opencode",
+        "antigravity"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Bundled source and offline regression suite",
+      "dependencies": [
+        "Python 3.9+ for lint"
+      ],
+      "conflicts": [],
+      "trust": "Bundled core",
+      "status": "BUNDLED",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "constraint-ladder",
+      "name": "constraint-ladder",
+      "category": "Core Engineering",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "recurring-failures",
+        "mechanical-constraints"
+      ],
+      "triggers": "A failure repeats and needs an enforceable constraint.",
+      "non_goals": "One-off corrections and generic style guidance.",
+      "source": "Local-only",
+      "source_path": "constraint-ladder",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "claude"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "team-mode",
+      "name": "team-mode",
+      "category": "Core Engineering",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "multi-agent"
+      ],
+      "triggers": "Independent work with observable benefit and explicit delegation authority.",
+      "non_goals": "Short or shared single-target changes.",
+      "source": "Local-only",
+      "source_path": "team-mode",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "skills-maintenance",
+      "name": "skills-maintenance",
+      "category": "Skill Lifecycle",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "global-maintenance"
+      ],
+      "triggers": "Maintaining a single user's skill catalog or global setup.",
+      "non_goals": "Normal project delivery.",
+      "source": "Local-only",
+      "source_path": "skills-maintenance",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "gh-fix-ci",
+      "name": "gh-fix-ci",
+      "category": "CI & Release",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "ci-debugging"
+      ],
+      "triggers": "An existing GitHub Actions PR check fails.",
+      "non_goals": "Pipeline design and general debugging.",
+      "source": "Local-only",
+      "source_path": "gh-fix-ci",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [
+        "Authenticated GitHub CLI"
+      ],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "gh-address-comments",
+      "name": "gh-address-comments",
+      "category": "Git & GitHub",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "pr-feedback"
+      ],
+      "triggers": "Process requested code changes from existing review comments.",
+      "non_goals": "Publishing replies or resolving threads without authorization.",
+      "source": "Local-only",
+      "source_path": "gh-address-comments",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [
+        "GitHub connector or CLI"
+      ],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "design-workflow",
+      "name": "design-workflow",
+      "category": "UI/UX",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "design-routing"
+      ],
+      "triggers": "Design work needs direction, implementation and evaluation skills.",
+      "non_goals": "One small visual fix with an obvious route.",
+      "source": "Local-only",
+      "source_path": "design-workflow",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [
+        "design-hub"
+      ],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "design-hub",
+      "name": "design-hub",
+      "category": "UI/UX",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "design-routing"
+      ],
+      "triggers": "Route Claude design tasks to the relevant visual skills.",
+      "non_goals": "Pure engineering or business logic work.",
+      "source": "Local-only",
+      "source_path": "design-hub",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "claude"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [
+        "design-workflow"
+      ],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "oil-ui",
+      "name": "oil-ui",
+      "category": "UI/UX",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "ui-design",
+        "visual-review"
+      ],
+      "triggers": "Design and validate a web or app interface against the existing product direction.",
+      "non_goals": "Backend logic and circuit-level debugging.",
+      "source": "Local-only",
+      "source_path": "oil-ui",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "oil-motion",
+      "name": "oil-motion",
+      "category": "UI/UX",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "media-animation"
+      ],
+      "triggers": "Use cleared image sequences or video for scroll or gesture animation.",
+      "non_goals": "Ordinary CSS micro-interactions.",
+      "source": "Local-only",
+      "source_path": "oil-motion",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "web-accessibility",
+      "name": "web-accessibility",
+      "category": "Frontend",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "web-accessibility"
+      ],
+      "triggers": "Audit keyboard paths, semantics and assistive technology behavior.",
+      "non_goals": "Legal compliance certification.",
+      "source": "Local-only",
+      "source_path": "web-accessibility",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "frontend-design",
+      "name": "frontend-design",
+      "category": "Frontend",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "frontend-design"
+      ],
+      "triggers": "Create a distinctive new interface or reshape an existing UI.",
+      "non_goals": "Backend or performance-only requests.",
+      "source": "https://github.com/anthropics/skills",
+      "source_path": "skills/frontend-design",
+      "license": "Publisher-specific terms; read LICENSE.txt",
+      "installation": "Review upstream terms and pin an exact revision before acquisition",
+      "agents": [
+        "codex",
+        "claude",
+        "opencode",
+        "antigravity"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Publisher source and corresponding local name reviewed; exact content equivalence unverified",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Upstream reference; candidate review required",
+      "status": "REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "vercel-react-best-practices",
+      "name": "vercel-react-best-practices",
+      "category": "Frontend",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "react-performance"
+      ],
+      "triggers": "Review React/Next.js performance against project versions.",
+      "non_goals": "Static non-React sites and purely visual changes.",
+      "source": "https://github.com/vercel-labs/agent-skills",
+      "source_path": "skills/react-best-practices",
+      "license": "MIT upstream; local derivative requires separate review",
+      "installation": "Review upstream terms and pin an exact revision before acquisition",
+      "agents": [
+        "codex",
+        "claude",
+        "opencode",
+        "antigravity"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Publisher source and corresponding local name reviewed; exact content equivalence unverified",
+      "dependencies": [
+        "React/Next.js project"
+      ],
+      "conflicts": [],
+      "trust": "Upstream reference; candidate review required",
+      "status": "REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "winui-app",
+      "name": "winui-app",
+      "category": "Desktop",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "winui",
+        "desktop-development"
+      ],
+      "triggers": "Implement or verify a Windows App SDK app.",
+      "non_goals": "Non-Windows desktop and web development.",
+      "source": "Local-only",
+      "source_path": "winui-app",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [
+        "Windows and Windows App SDK"
+      ],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "academic-research-plan",
+      "name": "academic-research-plan",
+      "category": "AI/ML & Research",
+      "tier": "DOMAIN",
+      "capabilities": [
+        "research-planning"
+      ],
+      "triggers": "Design source-grounded ML and robotics experiments.",
+      "non_goals": "Presenting planned experiments as results.",
+      "source": "Local-only",
+      "source_path": "academic-research-plan",
+      "license": "CC-BY-NC-4.0 declared locally",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    },
+    {
+      "id": "project-docs",
+      "name": "project-docs",
+      "category": "Documentation",
+      "tier": "RECOMMENDED",
+      "capabilities": [
+        "project-documentation"
+      ],
+      "triggers": "Write onboarding, architecture and debugging docs from repository evidence.",
+      "non_goals": "Academic thesis sections and imaginary project details.",
+      "source": "Local-only",
+      "source_path": "project-docs",
+      "license": "Distribution permission unverified",
+      "installation": "Use an independently installed, reviewed copy",
+      "agents": [
+        "codex"
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "evidence": "Local metadata inspected; independent runtime evaluation required",
+      "dependencies": [],
+      "conflicts": [],
+      "trust": "Independent local asset; do not redistribute",
+      "status": "LOCAL_REFERENCE",
+      "verified": "2026-11-26"
+    }
+  ]
+}

@@ -19,5 +19,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Run unit tests
-        working-directory: engineering-workflow-kit
-        run: python -I -B -W error::ResourceWarning -m unittest discover -s tests
+        run: python -I -B -W error::ResourceWarning -m unittest discover -s engineering-workflow-kit/tests
+      - name: Test global setup and adaptive lifecycle
+        run: python -I -B -W error::ResourceWarning -m unittest discover -s adaptive-skills-kit/tests
+      - name: Check generated catalog and lock
+        run: python -B tools/setup.py sync-reference --check
