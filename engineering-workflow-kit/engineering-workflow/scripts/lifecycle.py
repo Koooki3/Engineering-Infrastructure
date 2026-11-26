@@ -222,6 +222,13 @@ def validate_pins(cwd, manifest):
             raise ValueError(f'Integration input moved: {ref}. Re-plan.')
 
 
+def freshness(cwd, receipt):
+    tracked = {ref: sha for ref, sha in receipt.get('pins', {}).items() if ref.startswith('refs/')}
+    changed = [ref for ref, sha in tracked.items() if optional(cwd, 'rev-parse', '--verify', ref + '^{commit}') != sha]
+    return {'freshness': 'STALE_INPUTS' if changed else 'CURRENT' if tracked else 'UNTRACKED',
+            'changed_inputs': changed}
+
+
 def empty_path(path):
     no_links(path)
     if os.path.lexists(path) or not path.parent.is_dir():
@@ -420,7 +427,9 @@ def deploy(cwd, state, task):
         if stable['contract_signature'] != contract_signature(contract):
             raise ValueError('Existing deployment contract changed; reconcile it explicitly')
         verify_stored_artifact(state, stable)
-    probe(contract, tree, stable)
+    observed = probe(contract, tree, stable)
+    if stable and stable['sha'] == sha:
+        return {'status': 'VERIFIED', **stable, 'observed': observed, **freshness(cwd, stable)}
     artifact = tree / contract['artifact']
     no_links(artifact)
     if artifact.exists():
@@ -437,7 +446,7 @@ def deploy(cwd, state, task):
     if checksum != digest(artifact) or state_id(str(tree), exclude=(str(artifact),)) != before:
         raise ValueError('Candidate or artifact drifted during verification')
     validate_pins(cwd, task)
-    receipt = {'sha': sha, 'artifact': store_artifact(state, artifact, checksum), 'sha256': checksum,
+    receipt = {'sha': sha, 'artifact': store_artifact(state, artifact, checksum), 'sha256': checksum, 'pins': task['pins'],
                'verified_state': before, 'submodules': submodules, 'git': string(git(tree, '--version')),
                'python': sys.version.split()[0], 'utc_epoch': time.time(), 'contract_signature': contract_signature(contract),
                'previous': {key: stable[key] for key in ('sha', 'sha256')} if stable else None}
@@ -630,6 +639,8 @@ def main(argv=None):
                             raise ValueError('Deployment contract drift')
                         verify_stored_artifact(state, stable)
                     result = probe(contract, cwd, stable) if contract else {'status': 'NOT_APPLICABLE'}
+                    if stable:
+                        result.update(freshness(cwd, stable))
         print(json.dumps(result, indent=2, ensure_ascii=True))
         return 0
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
