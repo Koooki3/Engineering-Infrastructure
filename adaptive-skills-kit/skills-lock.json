@@ -208,7 +208,7 @@
   "schema": 1,
   "sha256": {
     "adaptive-skills": "247ae50343988726f187f75257d88e89456d16ece658d85187c2f528769e6b78",
-    "engineering-workflow": "d59f2d40337cc0e469a8d26822a99ee61762650d4710a739564bce63b881b663",
+    "engineering-workflow": "8e080787e7ff8600aa4e9e5debc0fc89f6d567108b0fa62ef29a6c9c25db0fe5",
     "pr-authoring": "afd40bd953fdef409d52f9f7fc382c4791cb5b83ff42eeaf4e64def9e50f8acf"
   }
 }

@@ -22,7 +22,7 @@ python lifecycle.py integrate task-id --owner agent-id --path /path/to/new-workt
 
 Repeat `--include FULL_REF BOUNDARY_REF_OR_SHA` in dependency order. Use `--exclude REF REASON` for relevant omissions. Prefer reviewed exact hashes if refs may move between preview and application. The deployment gate detects moved named inputs. `fetch` updates the selected remote-tracking heads while preserving local branches. `fast-forward --expected SHA --target FULL_REF` operates on a clean, attached branch with ancestry proof. Keep independent PRs on their own branches.
 
-Integration records an exact manifest under `ewk-lifecycle/tasks/` in the Git common directory. Patch equivalence can identify an already applied change. Squashed, reverted or semantically equivalent changes still warrant review. Select linear ranges, and address conflicts in isolation. An incomplete candidate cannot deploy. Initialize verified submodules with the project's existing tools. Git documents [patch equivalence](https://git-scm.com/docs/git-cherry) and [worktree behavior](https://git-scm.com/docs/git-worktree).
+Integration records an exact manifest under `ewk-lifecycle/tasks/` in the Git common directory. Patch equivalence can identify an already applied change. Squashed, reverted or semantically equivalent changes still warrant review. Select linear ranges, and address conflicts in isolation. An incomplete candidate cannot deploy. Initialize verified submodules with the project's existing tools. See `git help cherry` and `git help worktree` for the underlying behavior.
 
 ## Deploy and observe
 
