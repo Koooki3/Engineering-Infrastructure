@@ -1,0 +1,19 @@
+diff --git a/routes.py b/routes.py
+index 46fad54..ed7be17 100644
+--- a/routes.py
++++ b/routes.py
+@@ -1,6 +1,14 @@
+ def active_routes(updates):
++    """Return routes from the highest-sequence upsert or delete per name."""
+     routes = {}
++    latest_sequences = {}
+     for name, seq, operation, *payload in updates:
++        if operation not in ("upsert", "delete"):
++            continue
++        if name in latest_sequences and seq <= latest_sequences[name]:
++            continue
++        # Keep the sequence even when deletion removes the route's value.
++        latest_sequences[name] = seq
+         if operation == "delete":
+             routes.pop(name, None)
+         else:

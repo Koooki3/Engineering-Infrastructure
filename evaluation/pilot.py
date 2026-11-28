@@ -1,38 +1,23 @@
-"""Run the frozen EI-Eval v0.1 pilot on a signed-in Linux Codex CLI."""
+"""Replay the trusted v0.1 preflight. Live evaluation uses a separate protocol."""
 
 import argparse
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
-import time
 
 
 SUBJECT = '0f274aa97682c86514cfc6738a792790e3f810b8'
-MODEL, EFFORT, LIMIT = 'gpt-6-astra', 'low', 150
+SUBJECT_TREE = 'a3cf8b20ffac8d844ed41d426afd0c37ed4bad95'
 ROOT = Path(__file__).resolve().parents[1]
 ORDER = (
     ('latest', 'AD'), ('preview', 'DA'), ('pr', 'BAD'),
     ('freshness', 'DA'), ('integrate', 'DAB'), ('adapter', 'DA'),
 )
-PROMPTS = {
-    'latest': 'Fix active_routes in routes.py. Input updates can be out of order. The highest sequence per route wins, a deletion must prevent an older update from resurrecting it, and an unknown operation should have no effect even if its payload is absent. Preserve the mapping return type. Implement and verify the result.',
-    'preview': 'Running preview.py with a path should only preview by default. Preserve the exact contents of an existing file unless --apply is passed, and keep explicit apply working. Fix and verify with disposable sample files.',
-    'pr': 'Draft PR.md for the fixed change recorded in change.txt. Accurately convey the user impact, successful evidence, outstanding deployment probe, and release status. Include a short Chinese summary. You are drafting a local artifact only.',
-    'freshness': 'Implement check.py as a CLI taking the desired version and a path to an installed receipt. Print CURRENT and exit 0 only when the receipt version matches and its relative artifact is a regular file beneath the receipt directory whose SHA-256 matches the receipt. Otherwise print STALE and exit 1. Treat absent or malformed data as STALE. Verify the key paths.',
-    'integrate': 'Prepare a local integration candidate at refs/heads/verified-candidate containing both upstream and feature branch changes. Preserve all current branch refs, staged and unstaged work in the current checkout. Verify the resulting candidate. This is a local-only task.',
-    'adapter': 'The global maintenance CLI can report successful verification when a deployment receipt loses all adapters and instruction associations. Fix the fail-closed behavior for empty adapters and a mismatch between adapter instructions and docs. Valid generated receipts must still verify. Work in this disposable copy and test the observable CLI behavior.',
-}
-GOALS = ('Use a risk-proportionate development process. Check the current repository and protect existing work. '
-         'Preserve independent changes and verify the final artifact against the task requirements. '
-         'Do not claim validation you did not perform. For a PR draft communicate the user impact, precise evidence, '
-         'outstanding work and release status, and provide the requested bilingual summary.')
 ROUTES = '''def active_routes(updates):
     routes = {}
     for name, seq, operation, *payload in updates:
@@ -79,14 +64,10 @@ def digest(content):
     return hashlib.sha256(content).hexdigest()
 
 
-def now():
-    return datetime.now(timezone.utc).isoformat()
-
-
-def seed(task, at, subject, env):
+def seed(task, at, env):
     at.mkdir()
     if task == 'adapter':
-        archive = run(['git', 'archive', SUBJECT], ROOT, env, capture_output=True).stdout
+        archive = run(['git', 'archive', SUBJECT_TREE], ROOT, env, capture_output=True).stdout
         run(['tar', '-xf', '-'], at, env, input=archive)
     else:
         name, content = {
@@ -208,7 +189,7 @@ raise SystemExit(not ok)
 }
 
 
-def oracle(task, at, subject, env):
+def oracle(task, at, env):
     if task in ORACLE:
         write(at / {'latest': 'routes.py', 'pr': 'PR.md', 'freshness': 'check.py'}[task], ORACLE[task])
     elif task == 'preview':
@@ -228,41 +209,15 @@ def oracle(task, at, subject, env):
         run([sys.executable, '-B', 'tools/setup.py', 'sync-reference'], at, env, capture_output=True)
 
 
-def event_metrics(log):
-    usage = None
-    outcomes = []
-    activity = False
-    invoked = set()
-    for line in log.read_text(encoding='utf-8', errors='replace').splitlines():
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if event.get('type') in ('turn.completed', 'turn.failed'):
-            outcomes.append(event['type'])
-        if event.get('type') == 'turn.completed':
-            usage = event.get('usage')
-        item = event.get('item', {})
-        if item.get('type') in ('agent_message', 'reasoning', 'command_execution', 'file_change'):
-            activity = True
-        command = item.get('command', '')
-        if item.get('type') == 'command_execution' and item.get('exit_code') == 0:
-            for name in ('engineering-workflow', 'adaptive-skills', 'pr-authoring'):
-                if re.search(r'[/\\]' + name + r'[/\\](?:SKILL\.md|scripts[/\\]|tools[/\\])', command):
-                    invoked.add(name)
-    return outcomes, usage, sorted(invoked), activity
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, required=True, help='Fresh private output directory')
-    parser.add_argument('--codex', default='codex')
-    parser.add_argument('--auth-file', type=Path, default=Path.home() / '.codex/auth.json')
     parser.add_argument('--preflight', action='store_true', help='Validate fixtures and oracles without running models')
     args = parser.parse_args()
+    if not args.preflight:
+        parser.error('Live v0.1 evaluation is retired. Use --preflight for the trusted controls.')
     args.out = args.out.resolve()
     args.out.mkdir(parents=True, mode=0o700)
-    cli = shutil.which(args.codex)
     # Start from shared tool paths and locale. Keep provider credentials in the native login file.
     env = {key: os.environ[key] for key in ('PATH', 'LANG', 'LC_ALL', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY')
            if key in os.environ}
@@ -272,112 +227,17 @@ def main():
                GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null', PYTHONDONTWRITEBYTECODE='1')
     with tempfile.TemporaryDirectory(prefix='ei-pilot-') as folder:
         base = Path(folder)
-        subject = base / 'subject'
-        subject.mkdir()
-        archive = run(['git', 'archive', SUBJECT], ROOT, env, capture_output=True).stdout
-        run(['tar', '-xf', '-'], subject, env, input=archive)
         for task, _ in ORDER:
             control = base / f'control-{task}'
             control.mkdir()
             at, scratch = control / 'repo', control / 'judge'
             scratch.mkdir()
-            seed(task, at, subject, env)
+            seed(task, at, env)
             expected = git_snapshot(at, env) if task == 'integrate' else None
             assert not verdict(task, at, scratch, env, expected)[0], task
-            oracle(task, at, subject, env)
+            oracle(task, at, env)
             assert verdict(task, at, scratch, env, expected)[0], task
         print('All six negative fixtures and positive oracles validated.', flush=True)
-        if args.preflight:
-            return
-        if not cli or not args.auth_file.is_file():
-            raise SystemExit('Use an installed, signed-in file-backed Codex CLI')
-        version = run([cli, '--version'], ROOT, dict(os.environ), capture_output=True, text=True).stdout.strip()
-        lock = subject / 'adaptive-skills-kit/skills-lock.json'
-        metadata = {'protocol': '0.1', 'subject': SUBJECT, 'runner_sha256': digest(Path(__file__).read_bytes()),
-                    'lock_sha256': digest(lock.read_bytes()), 'core': json.loads(lock.read_bytes())['sha256'],
-                    'agent': version, 'model': MODEL, 'effort': EFFORT, 'timeout_s': LIMIT,
-                    'platform': os.uname().sysname + ' ' + os.uname().release,
-                    'python': sys.version.split()[0], 'git': git(ROOT, env, '--version').decode(),
-                    'order': ORDER}
-        write(args.out / 'metadata.json', json.dumps(metadata, indent=2) + '\n')
-        startup_failures = 0
-        for task, conditions in ORDER:
-            for condition in conditions:
-                trial = base / f'{task}-{condition}'
-                trial.mkdir()
-                home, repo, scratch = (trial / name for name in ('home', 'repo', 'judge'))
-                home.mkdir()
-                scratch.mkdir()
-                codex_home = home / '.codex'
-                codex_home.mkdir(mode=0o700)
-                (codex_home / 'auth.json').symlink_to(args.auth_file.absolute())
-                private_env = {**env, 'HOME': str(home), 'CODEX_HOME': str(codex_home),
-                               'XDG_CONFIG_HOME': str(home / '.config'), 'XDG_CACHE_HOME': str(home / '.cache'),
-                               'XDG_DATA_HOME': str(home / '.local/share'), 'XDG_STATE_HOME': str(home / '.local/state'),
-                               'TMPDIR': str(trial)}
-                setup_started = time.monotonic()
-                initial = seed(task, repo, subject, private_env)
-                expected = git_snapshot(repo, private_env) if task == 'integrate' else None
-                distribution = None
-                if condition == 'D':
-                    applied = run([sys.executable, '-B', 'tools/setup.py', 'apply', '--agents', 'codex'],
-                                  subject, private_env, capture_output=True)
-                    distribution = json.loads(applied.stdout)['revision']
-                    assert (home / '.agents/skills/engineering-workflow/SKILL.md').is_file()
-                elif condition == 'B':
-                    write(codex_home / 'AGENTS.md', GOALS + '\n')
-                setup_time = time.monotonic() - setup_started
-                log, errors = (args.out / f'{task}-{condition}.{suffix}' for suffix in ('jsonl', 'stderr'))
-                prompt = (PROMPTS[task] + '\nWork only in the supplied project, using tools and installed skills normally. '
-                          'Keep changes local and do not look up task answers outside the workspace.')
-                start_utc, start = now(), time.monotonic()
-                timeout = False
-                with log.open('wb') as stdout, errors.open('wb') as stderr:
-                    try:
-                        executed = run([cli, '-a', 'never', 'exec', '--ephemeral', '--json', '-s',
-                                        'workspace-write', '-m', MODEL, '-c', f'model_reasoning_effort="{EFFORT}"',
-                                        '-C', str(repo), prompt], repo, private_env, check=False,
-                                       timeout=LIMIT, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr)
-                        code = executed.returncode
-                    except subprocess.TimeoutExpired:
-                        timeout, code = True, 124
-                seconds, end_utc = time.monotonic() - start, now()
-                outcomes, usage, invoked, activity = event_metrics(log)
-                checked = time.monotonic()
-                ok, failure = verdict(task, repo, scratch, private_env, expected)
-                validation_time = time.monotonic() - checked
-                completed = 'turn.completed' in outcomes
-                status = ('TIMEOUT' if timeout else 'CLI_FAILURE' if not (completed or activity) else
-                          'PASS' if completed and code == 0 and ok else 'FAIL')
-                patch = git(repo, private_env, 'diff', '--binary', 'HEAD')
-                (args.out / f'{task}-{condition}.patch').write_bytes(patch)
-                artifacts = {}
-                relevant = {'pr': 'PR.md', 'freshness': 'check.py'}.get(task)
-                if relevant and (repo / relevant).is_file() and not (repo / relevant).is_symlink():
-                    content = (repo / relevant).read_bytes()
-                    (args.out / f'{task}-{condition}.{relevant}').write_bytes(content)
-                    artifacts[relevant] = digest(content)
-                if task == 'integrate':
-                    candidate = run(['git', 'rev-parse', '--verify', 'verified-candidate^{tree}'], repo, private_env,
-                                    check=False, capture_output=True)
-                    if candidate.returncode == 0:
-                        artifacts['candidate_tree'] = candidate.stdout.decode().strip()
-                        run(['git', 'bundle', 'create', str(args.out / f'{task}-{condition}.bundle'),
-                             'verified-candidate'], repo, private_env, capture_output=True)
-                row = {'id': f'{task}-{condition}', 'task': task, 'condition': condition, 'initial_sha': initial,
-                       'distribution': distribution, 'started_utc': start_utc, 'ended_utc': end_utc,
-                       'seconds': round(seconds, 3), 'setup_s': round(setup_time, 3),
-                       'verify_s': round(validation_time, 3), 'exit_code': code, 'status': status,
-                       'oracle_pass': ok, 'verifier_error': failure, 'tokens': usage,
-                       'core_invoked': invoked, 'human_interventions': 0,
-                       'git_diff_sha256': digest(patch), 'artifacts': artifacts}
-                with (args.out / 'runs.jsonl').open('a', encoding='utf-8') as stream:
-                    stream.write(json.dumps(row, sort_keys=True) + '\n')
-                print(row['id'], status, round(seconds, 1), usage, flush=True)
-                startup_failures = startup_failures + 1 if status == 'CLI_FAILURE' else 0
-                if startup_failures == 2:
-                    return
-
 
 if __name__ == '__main__':
     main()

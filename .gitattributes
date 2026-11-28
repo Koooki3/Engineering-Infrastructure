@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+evaluation/v01-evidence/** text eol=lf
+evaluation/v02/** text eol=lf

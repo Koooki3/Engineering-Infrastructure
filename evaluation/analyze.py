@@ -1,11 +1,14 @@
 """Publish allowlisted pilot evidence, summarize outcomes, or render the result figure."""
 
 import argparse
+import hashlib
 import json
+import math
 from pathlib import Path
 import random
 import re
 import statistics
+import subprocess
 
 
 METADATA = {'protocol', 'subject', 'runner_sha256', 'lock_sha256', 'core', 'agent', 'model', 'effort',
@@ -16,6 +19,8 @@ ROWS = {'id', 'task', 'condition', 'initial_sha', 'distribution', 'started_utc',
 LABELS = {'latest': 'Out-of-order updates', 'preview': 'Preview preserves data', 'pr': 'PR draft accuracy',
           'freshness': 'Deployment freshness', 'integrate': 'Dirty-checkout integration',
           'adapter': 'Deployment receipt integrity'}
+FROZEN_V01_RUNNER = '14aa1cd39e18c765b26a9d3d7ccaf8460ac4e05a'
+FROZEN_V01_PROTOCOL = 'a2a9eaedf293655047d5f90e53c838ec67023434'
 
 
 def collect(folder):
@@ -32,16 +37,26 @@ def validate(data):
     for row in runs:
         assert set(row) == ROWS, 'Unexpected receipt fields'
         assert row['id'] == f"{row['task']}-{row['condition']}"
-        assert row['seconds'] > 0 and row['setup_s'] >= 0 and row['verify_s'] >= 0
+        assert all(type(row[key]) in (int, float) and math.isfinite(row[key]) and row[key] >= 0
+                   for key in ('seconds', 'setup_s', 'verify_s'))
+        assert row['seconds'] > 0 and type(row['oracle_pass']) is bool and type(row['exit_code']) is int
+        assert re.fullmatch(r'[0-9a-f]{40}', row['initial_sha'])
+        assert re.fullmatch(r'[0-9a-f]{64}', row['git_diff_sha256'])
+        if row['condition'] == 'D':
+            assert re.fullmatch(r'[0-9a-f]{64}', row['distribution'] or '')
+        else:
+            assert row['distribution'] is None
         assert row['status'] in {'PASS', 'FAIL', 'TIMEOUT', 'CLI_FAILURE'}
         assert row['status'] != 'PASS' or (row['oracle_pass'] and row['exit_code'] == 0)
+        assert row['status'] != 'TIMEOUT' or row['exit_code'] == 124
         assert row['artifacts'].keys() <= {'candidate_tree', 'PR.md', 'check.py'}
         assert all(re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', value) for value in row['artifacts'].values())
         if row['tokens'] is not None:
             assert {'input_tokens', 'cached_input_tokens', 'output_tokens'} <= row['tokens'].keys()
             assert row['tokens'].keys() <= {'input_tokens', 'cached_input_tokens', 'output_tokens',
                                             'cache_write_input_tokens', 'reasoning_output_tokens'}
-            assert all(isinstance(value, int) and value >= 0 for value in row['tokens'].values())
+            assert all(type(value) is int and value >= 0 for value in row['tokens'].values())
+            assert row['tokens']['cached_input_tokens'] <= row['tokens']['input_tokens']
     by_task = {}
     for row in runs:
         by_task.setdefault(row['task'], []).append(row)
@@ -85,7 +100,39 @@ def summary(data):
             values = sorted(statistics.mean(rng.choices(differences, k=len(differences))) for _ in range(10000))
             contrasts['task_bootstrap_95'] = [values[250], values[9749]]
         pairs[left + '-' + right] = contrasts
-    return {'groups': groups, 'paired': pairs}
+    scheduled = sum(len(conditions) for _, conditions in data['metadata']['order'])
+    completion = {'scheduled': scheduled, 'attempted': len(runs),
+                  'status': 'ALL_ATTEMPTED' if len(runs) == scheduled else 'PARTIAL'}
+    return {'groups': groups, 'paired': pairs, 'completion': completion}
+
+
+def check_frozen(data, result, folder):
+    root = folder.parent
+    runner = subprocess.check_output(['git', 'cat-file', 'blob', FROZEN_V01_RUNNER], cwd=root)
+    protocol = subprocess.check_output(['git', 'cat-file', 'blob', FROZEN_V01_PROTOCOL], cwd=root)
+    assert hashlib.sha256(runner).hexdigest() == data['metadata']['runner_sha256']
+    assert protocol == (folder / 'PROTOCOL.md').read_bytes().replace(b'\r\n', b'\n')
+    assert markdown(data, result) == (folder / 'RESULTS.md').read_text(encoding='utf-8')
+    receipts = {row['id']: row for row in data['runs']}
+    evidence = folder / 'v01-evidence'
+    artifacts = json.loads((evidence / 'manifest.json').read_bytes())
+    assert artifacts['schema'] == 1
+    names = set()
+    for item in artifacts['artifacts']:
+        trial, file = item['id'], item['file']
+        assert file in (f'{trial}.patch', f'{trial}.PR.md') and file not in names
+        names.add(file)
+        row = receipts[trial]
+        expected = row['git_diff_sha256'] if file.endswith('.patch') else row['artifacts']['PR.md']
+        assert hashlib.sha256((evidence / file).read_bytes()).hexdigest() == item['sha256'] == expected
+    assert len(names) == 7
+
+    preflight_dir = folder / 'v02'
+    preflight = json.loads((preflight_dir / 'preflight-results.json').read_bytes())
+    assert preflight['status'] == 'PASS' and preflight['model_trials'] == 0
+    for name, field in (('tasks.json', 'manifest_sha256'), ('sandbox.py', 'sandbox_sha256'),
+                        ('preflight.py', 'preflight_sha256')):
+        assert hashlib.sha256((preflight_dir / name).read_bytes()).hexdigest() == preflight[field]
 
 
 def chart(data, destination):
@@ -173,9 +220,12 @@ def main():
     parser.add_argument('--publish', type=Path, help='Write allowlisted run evidence from a private run folder')
     parser.add_argument('--chart', type=Path)
     parser.add_argument('--table', type=Path)
+    parser.add_argument('--check-frozen', action='store_true', help='Check v0.1 source, table and public artifacts')
     args = parser.parse_args()
     data = collect(args.input) if args.input.is_dir() else json.loads(args.input.read_text(encoding='utf-8'))
     result = summary(data)
+    if args.check_frozen:
+        check_frozen(data, result, args.input.resolve().parent)
     if args.publish:
         args.publish.write_bytes((json.dumps(data, indent=2, sort_keys=True) + '\n').encode('utf-8'))
     if args.chart:

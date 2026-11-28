@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "artifacts": [
+    {
+      "id": "latest-A",
+      "file": "latest-A.patch",
+      "grade_scope": "artifact",
+      "sha256": "f0d67e6ba26af043e1ac9c78e5bc007b59c4e2bbc36ea0ffd785a58724e3f2cc"
+    },
+    {
+      "id": "latest-D",
+      "file": "latest-D.patch",
+      "grade_scope": "artifact",
+      "sha256": "41a0d86863799b95e35c19d47bed807cba1a6ee7c00a8842377502fd6427b07b"
+    },
+    {
+      "id": "preview-A",
+      "file": "preview-A.patch",
+      "grade_scope": "artifact",
+      "sha256": "9b8dc513c1a6f0e64ebc0eabeb14ec7c93eca6a9026f94f8b378eba1c4823900"
+    },
+    {
+      "id": "preview-D",
+      "file": "preview-D.patch",
+      "grade_scope": "artifact",
+      "sha256": "9b8dc513c1a6f0e64ebc0eabeb14ec7c93eca6a9026f94f8b378eba1c4823900"
+    },
+    {
+      "id": "pr-A",
+      "file": "pr-A.PR.md",
+      "grade_scope": "artifact",
+      "sha256": "6b2647b6b0dbd6c54dbd9884f9c5c37b4c86de18fb2070979ab65bf7f848f55d"
+    },
+    {
+      "id": "pr-B",
+      "file": "pr-B.PR.md",
+      "grade_scope": "artifact",
+      "sha256": "ac5a2010d9d1c76d7c8cf206fe1e3437c9500609034dbe551917c56f4839dc87"
+    },
+    {
+      "id": "pr-D",
+      "file": "pr-D.PR.md",
+      "grade_scope": "artifact",
+      "sha256": "a18c6de2a18d622d3c61023c50b34f6b1cc46f18931dbfea211c6f24ab3c3724"
+    }
+  ]
+}

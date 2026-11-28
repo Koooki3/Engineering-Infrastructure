@@ -1,0 +1,18 @@
+diff --git a/routes.py b/routes.py
+index 46fad54..8296e9c 100644
+--- a/routes.py
++++ b/routes.py
+@@ -1,6 +1,13 @@
+ def active_routes(updates):
+     routes = {}
++    latest_sequences = {}
+     for name, seq, operation, *payload in updates:
++        if operation not in ("update", "delete"):
++            continue
++        if name in latest_sequences and seq <= latest_sequences[name]:
++            continue
++        # Retain the sequence of deletions to prevent stale resurrection.
++        latest_sequences[name] = seq
+         if operation == "delete":
+             routes.pop(name, None)
+         else:

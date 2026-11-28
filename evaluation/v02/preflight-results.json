@@ -1,0 +1,43 @@
+{
+  "bubblewrap": "bubblewrap 0.11.1",
+  "isolation": {
+    "host_environment_not_inherited": true,
+    "host_files_hidden": true,
+    "no_host_loopback": true,
+    "timeout_terminated_descendant": true,
+    "workspace_writable": true
+  },
+  "kernel": "6.18.58.1-microsoft-standard-WSL2",
+  "manifest_sha256": "67c599cad99fcf467317bca950d3bc5a3a18fe9e2ac92f207eacd0ce7dcf1a79",
+  "model_trials": 0,
+  "preflight_sha256": "0d021193b57136c5d51f92ca0c68092ce9e1c85048894aea12bdfa2fc4a2d2b2",
+  "sandbox_sha256": "72f9625e3a48e6f88fdf88e3673531883c51a8a5e24da00cdba9e28dcbaf4e92",
+  "status": "PASS",
+  "tasks": {
+    "cleanup": {
+      "negative_rejected": true,
+      "oracle_accepted": true
+    },
+    "evidence": {
+      "negative_rejected": true,
+      "oracle_accepted": true
+    },
+    "freshness": {
+      "negative_rejected": true,
+      "oracle_accepted": true
+    },
+    "integration": {
+      "negative_rejected": true,
+      "oracle_accepted": true
+    },
+    "operation": {
+      "negative_rejected": true,
+      "oracle_accepted": true
+    },
+    "rollback": {
+      "negative_rejected": true,
+      "oracle_accepted": true
+    }
+  },
+  "version": "0.2"
+}

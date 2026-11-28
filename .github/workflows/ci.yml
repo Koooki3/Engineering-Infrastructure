@@ -17,6 +17,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python }}
@@ -26,7 +27,12 @@ jobs:
         run: python -I -B -W error::ResourceWarning -m unittest discover -s adaptive-skills-kit/tests
       - name: Check generated catalog and lock
         run: python -B tools/setup.py sync-reference --check
+      - name: Reject tracked workstation deployment data
+        shell: bash
+        run: |
+          tracks="$(git ls-files -- 'engineering-workflow-kit/deploy/plan-windows.json' 'engineering-workflow-kit/deploy/plan-wsl.json' 'engineering-workflow-kit/reports/deployments/*')"
+          test -z "$tracks"
       - name: Verify evaluation receipts and lifecycle fixtures
         run: |
-          python -B evaluation/analyze.py evaluation/pilot-results.json
+          python -B evaluation/analyze.py evaluation/pilot-results.json --check-frozen
           python -B evaluation/lifecycle.py

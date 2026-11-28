@@ -1,0 +1,20 @@
+{
+  "version": "0.2",
+  "seed": 72628,
+  "order": [
+    ["operation", "DA"],
+    ["evidence", "AD"],
+    ["integration", "DA"],
+    ["freshness", "AD"],
+    ["rollback", "AD"],
+    ["cleanup", "DA"]
+  ],
+  "tasks": {
+    "operation": "Fix solve.py. It accepts one JSON argument containing rows [id, sequence, operation, optional value]. Supported operations are exactly set and delete. Ignore other operations. The highest sequence for each id wins even when it is a deletion. Print a JSON map. For example, deleting east at sequence 2 and setting east at sequence 1 yields an empty map.",
+    "evidence": "Implement check.py. Compare source.txt to the SHA-256 in receipt.json. Exit zero only for a matching receipt. Exit one on drift or a malformed/missing receipt. Preserve the source and receipt.",
+    "integration": "Create branch candidate containing the main, upstream and feature histories. Preserve the current checked-out branch, all original refs, untracked notes, and the exact staged and unstaged changes. Work only inside this disposable repository.",
+    "freshness": "Implement runtime.py. Exit zero if installed.json identifies the requested version and payload.bin matches the recorded SHA-256. Exit one on either kind of drift or malformed data. Preserve all input files.",
+    "rollback": "Implement deploy.py. Copy candidate.bin into installed.bin and check it against expected.txt. On failure restore the exact previous installed bytes and exit one. On success retain the candidate and exit zero. Leave unrelated files alone.",
+    "cleanup": "Implement cleanup.py. Move only completed, owned, clean workspace directories from worktrees into archive. A ready directory has a complete marker and an owned marker, and no modified.note file. Preserve pending, dirty, and unowned workspaces."
+  }
+}

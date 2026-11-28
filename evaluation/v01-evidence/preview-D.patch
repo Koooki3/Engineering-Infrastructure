@@ -1,0 +1,13 @@
+diff --git a/preview.py b/preview.py
+index 81b738a..3be7751 100644
+--- a/preview.py
++++ b/preview.py
+@@ -4,7 +4,7 @@ from pathlib import Path
+ if __name__ == "__main__":
+     parser = argparse.ArgumentParser()
+     parser.add_argument("target", type=Path)
+-    parser.add_argument("--apply", action="store_true", default=True)
++    parser.add_argument("--apply", action="store_true")
+     args = parser.parse_args()
+     if args.apply:
+         args.target.write_bytes(b"mode=updated\n")
