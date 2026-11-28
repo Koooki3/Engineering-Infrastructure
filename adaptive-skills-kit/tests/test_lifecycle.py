@@ -126,11 +126,48 @@ class Lifecycle(unittest.TestCase):
                 skills.default_state(self.home)  # block names a state that no longer exists
             claude.write_text(original, encoding='utf-8')
             deployment = self.state / 'deployment.json'
+            unknown_adapter = dict(state['adapters'])
+            unknown_adapter['unsupported'] = unknown_adapter.pop('codex')
+            relative_adapter = dict(state['adapters'])
+            relative_adapter['codex'] = ['relative/skills', relative_adapter['codex'][1]]
+            malformed_docs = dict(state['docs'])
+            malformed_docs.pop(next(iter(malformed_docs)))
+            extra_docs = dict(state['docs'])
+            extra_docs[str(self.base / 'extra.md')] = next(iter(state['docs'].values()))
+            inconsistent_docs = dict(state['docs'])
+            first_doc = next(iter(inconsistent_docs))
+            inconsistent_docs[first_doc] = inconsistent_docs[first_doc].replace(
+                'Global maintenance entry point', 'Changed maintenance entry point')
+            invalid_managed = dict(state['managed'])
+            invalid_managed['bad skill id'] = invalid_managed['engineering-workflow']
+            invalid_signature = dict(state['managed'])
+            invalid_signature['engineering-workflow'] = ['file', 'not-a-digest']
             for name, malformed in {'array': [], 'null': None, 'empty': {}, 'schema': {**state, 'schema': 2},
-                                    'docs array': {**state, 'docs': []}, 'unowned': {**state, 'docs': {}}}.items():
+                                    'docs array': {**state, 'docs': []}, 'unowned': {**state, 'docs': {}},
+                                    'empty adapters': {**state, 'adapters': {}},
+                                    'unsupported adapter': {**state, 'adapters': unknown_adapter},
+                                    'relative adapter path': {**state, 'adapters': relative_adapter},
+                                    'malformed adapter pair': {**state, 'adapters': {'codex': ['/skills']}},
+                                    'missing adapter docs': {**state, 'docs': malformed_docs},
+                                    'extra docs': {**state, 'docs': extra_docs},
+                                    'inconsistent docs': {**state, 'docs': inconsistent_docs},
+                                    'invalid managed id': {**state, 'managed': invalid_managed},
+                                    'invalid CORE signature': {**state, 'managed': invalid_signature},
+                                    'invalid revision': {**state, 'revision': 'not-a-digest'}}.items():
                 with self.subTest(state=name):
                     store.atomic(deployment, store.encode(malformed))
                     self.assertIn('--state', self.cli('recover', code=1, discover=True))
+            destination = self.base / 'interrupted-target'
+            payload = b'interrupted replacement'
+            destination.write_bytes(payload)
+            transaction = 'a' * 32
+            scratch = destination.parent / f'.ei-{transaction}-0'
+            store.atomic(self.state / 'pending.json', store.encode([{
+                'dest': str(destination), 'scratch': str(scratch), 'before': None,
+                'after': ['file', store.digest(payload)],
+            }]))
+            self.assertTrue(self.cli('recover')['recovered'])  # explicit recovery does not parse deployment.json
+            self.assertFalse(destination.exists())
             deployment.unlink()
             self.assertTrue((self.state / 'history').is_dir())
             self.assertIn('--state', self.cli('recover', code=1, discover=True))

@@ -1,5 +1,9 @@
 # Changelog
 
+## Deployment state integrity
+
+- Reject empty adapter sets, inconsistent instruction ownership, and invalid deployment fingerprints during state loading. Keep explicit transaction recovery available with damaged state metadata.
+
 ## Empirical evaluation
 
 - Publish a six-task paired Codex pilot, standalone lifecycle scenarios, and a reproducible Terminal-Bench verifier adaptation.

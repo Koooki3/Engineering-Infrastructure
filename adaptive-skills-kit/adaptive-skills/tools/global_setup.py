@@ -3,13 +3,23 @@
 import os
 from pathlib import Path
 
-from catalog import catalog, core_lock, reference
+from catalog import ID, catalog, core_lock, reference
 from store import check_path, describe, encode, files, fingerprint, link, read_json, signature
 
 
 START, END = '<!-- engineering-infrastructure:begin -->', '<!-- engineering-infrastructure:end -->'
 LEGACY_START, LEGACY_END = '<!-- ewk:begin -->', '<!-- ewk:end -->'
 CORE = {'engineering-workflow', 'adaptive-skills', 'pr-authoring'}
+ADAPTER_IDS = {'codex', 'claude', 'opencode', 'antigravity'}
+
+
+def _sha256(value):
+    return (isinstance(value, str) and len(value) == 64
+            and all(character in '0123456789abcdef' for character in value))
+
+
+def _path_key(value):
+    return os.path.normcase(os.path.abspath(value))
 
 
 def env_path(home, name, fallback):
@@ -42,13 +52,38 @@ def read_state(path):
     if not path.exists():
         return None
     result = read_json(path)
-    if (not isinstance(result, dict) or type(result.get('schema')) is not int or result['schema'] != 1
-            or not isinstance(result.get('revision'), str)
-            or not isinstance(result.get('adapters'), dict)
-            or not isinstance(result.get('managed'), dict) or not CORE.issubset(result['managed'])
-            or not isinstance(result.get('docs'), dict)
-            or any(not Path(name).is_absolute() or not isinstance(block, str)
-                   for name, block in result['docs'].items())):
+    if not isinstance(result, dict) or type(result.get('schema')) is not int or result['schema'] != 1:
+        raise ValueError('Unsupported deployment state')
+    adapters = result.get('adapters')
+    managed = result.get('managed')
+    promoted = result.get('promoted', {})
+    docs = result.get('docs')
+    if (not _sha256(result.get('revision'))
+            or not isinstance(adapters, dict) or not adapters or not set(adapters).issubset(ADAPTER_IDS)
+            or any(not isinstance(pair, list) or len(pair) != 2
+                   or any(not isinstance(value, str) or not Path(value).is_absolute() for value in pair)
+                   for pair in adapters.values())
+            or not isinstance(managed, dict) or not CORE.issubset(managed)
+            or any(not isinstance(name, str) or len(name) > 64 or not ID.fullmatch(name)
+                   or not isinstance(sig, list) or len(sig) != 2 or sig[0] != 'tree' or not _sha256(sig[1])
+                   for name, sig in managed.items())
+            or not isinstance(promoted, dict)
+            or not set(managed).difference(CORE).issubset(promoted)):
+        raise ValueError('Unsupported deployment state')
+    if (not isinstance(docs, dict)
+            or any(not isinstance(name, str) or not Path(name).is_absolute() or not isinstance(block, str)
+                   for name, block in docs.items())):
+        raise ValueError('Unsupported deployment state')
+    expected_docs = {_path_key(pair[1]) for pair in adapters.values()}
+    actual_docs = {_path_key(name) for name in docs}
+    try:
+        valid_blocks = (len(actual_docs) == len(docs)
+                        and bool(docs)
+                        and len(set(docs.values())) == 1
+                        and all(extract_block(value) == value for value in docs.values()))
+    except ValueError:
+        valid_blocks = False
+    if actual_docs != expected_docs or not valid_blocks:
         raise ValueError('Unsupported deployment state')
     return result
 
