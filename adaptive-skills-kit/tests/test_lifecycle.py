@@ -85,6 +85,16 @@ class Lifecycle(unittest.TestCase):
         self.assertEqual(rules.read_bytes(), original)
         self.assertFalse((self.home / '.agents/skills/pr-authoring').exists())
 
+    def test_checkout_without_state_targets_the_live_deployment(self):
+        self.apply()
+        with patch.dict(os.environ, {'ENGINEERING_INFRA_HOME': ''}):
+            self.assertEqual(skills.default_state(self.home), self.state.absolute())
+            (self.home / '.claude/CLAUDE.md').unlink()
+            (self.home / '.codex/AGENTS.md').unlink()
+            (self.home / '.config/opencode/AGENTS.md').unlink()
+            (self.home / '.gemini/GEMINI.md').unlink()
+            self.assertEqual(skills.default_state(self.home), (self.home / '.engineering-infrastructure').absolute())
+
     def test_inert_stage_review_version_update_archive_and_restore(self):
         self.apply()
         self.write_candidate('Version one.\n')

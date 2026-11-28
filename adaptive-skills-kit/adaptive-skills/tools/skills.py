@@ -25,10 +25,37 @@ def output(value):
     print(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True))
 
 
+def deployed_state(home):
+    """State directory named by a managed instruction block in this home, if it holds a deployment."""
+    marker = 'Global maintenance entry point: `'
+    for _skills, rules in setup.adapters(home).values():
+        try:
+            text = rules.read_text(encoding='utf-8')
+        except OSError:
+            continue
+        start = text.find(setup.START)
+        if start < 0 or text.find(setup.END, start) < 0:
+            continue
+        at = text.find(marker, start, text.find(setup.END, start))
+        if at < 0:
+            continue
+        cli = Path(text[at + len(marker):text.index('`', at + len(marker))])
+        root = cli.parent.parent.parent  # <state>/runtime/tools/setup.py
+        if (root / 'deployment.json').is_file():
+            return root
+    return None
+
+
 def default_state(home):
-    return Path(os.environ.get('ENGINEERING_INFRA_HOME') or
-                (SOURCE.parent if SOURCE.name == 'runtime' and (SOURCE.parent / 'deployment.json').is_file()
-                 else home / '.engineering-infrastructure')).absolute()
+    if os.environ.get('ENGINEERING_INFRA_HOME'):
+        return Path(os.environ['ENGINEERING_INFRA_HOME']).absolute()
+    if SOURCE.name == 'runtime' and (SOURCE.parent / 'deployment.json').is_file():
+        return SOURCE.parent.absolute()
+    fallback = home / '.engineering-infrastructure'
+    if (fallback / 'deployment.json').is_file():
+        return fallback.absolute()
+    # A checkout run without --state must target the live deployment, not plan a second one.
+    return (deployed_state(home) or fallback).absolute()
 
 
 def roots(args, home):

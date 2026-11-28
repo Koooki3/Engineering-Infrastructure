@@ -1,6 +1,6 @@
 # Adaptive Skills Kit
 
-Use the [global bootstrap](../BOOTSTRAP.md) for installation. Examples use `python tools/setup.py`; the installed global instructions give the native runtime path. Put `--state PATH` before the subcommand when using a custom state directory from a checkout.
+Use the [global bootstrap](../BOOTSTRAP.md) for installation. Examples use `python tools/setup.py`; the installed global instructions give the native runtime path. Put `--state PATH` before the subcommand to choose a state directory explicitly; without it, a checkout targets the deployment named in the managed instruction block, if any.
 
 ## Resolve and evaluate
 

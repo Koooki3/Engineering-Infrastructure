@@ -13,7 +13,7 @@ Record the distribution revision and confirm native Python 3.9+. Identify instal
 | [OpenCode](https://opencode.ai/docs/skills/) | `$XDG_CONFIG_HOME/opencode/skills`, default `~/.config/opencode/skills` | Same config root, `AGENTS.md` |
 | [Antigravity](https://antigravity.google/docs/skills) | `~/.gemini/config/skills` | `~/.gemini/GEMINI.md` |
 
-Claude honors `CLAUDE_CONFIG_DIR` in the adapter. Review custom discovery overrides or same-name project/legacy skills before applying. Use an explicit `--state` or `ENGINEERING_INFRA_HOME` to place data on the desired volume. The default is `~/.engineering-infrastructure`. Windows and WSL use the same source revision and independent native state. For an alternate distribution root, pass `--source PATH` before the command.
+Claude honors `CLAUDE_CONFIG_DIR` in the adapter. Review custom discovery overrides or same-name project/legacy skills before applying. Use an explicit `--state` or `ENGINEERING_INFRA_HOME` to place data on the desired volume. The default is `~/.engineering-infrastructure`; once a deployment exists, a checkout run without `--state` follows the runtime path in the managed instruction block instead of planning a second install. Windows and WSL use the same source revision and independent native state. For an alternate distribution root, pass `--source PATH` before the command.
 
 ## 2. Plan, apply, verify
 

@@ -587,8 +587,8 @@
   },
   "schema": 1,
   "sha256": {
-    "adaptive-skills": "00f2063a33e794cd09f24bcb66b268f754680d066633a44109864fee4abddaa2",
-    "engineering-workflow": "281d799079d8d560fd5925be2c7e55efbf4925f35f17d9a15f65ed807a9f2183",
+    "adaptive-skills": "21ebfce5b5869263c51e27aec96f4c3524aa85cc7055ccae33fbc01ef521625e",
+    "engineering-workflow": "3a0029e6a5a8ea374c6e4501802f11bfd3381aaffaf037388a354683b7e95522",
     "pr-authoring": "afd40bd953fdef409d52f9f7fc382c4791cb5b83ff42eeaf4e64def9e50f8acf"
   }
 }

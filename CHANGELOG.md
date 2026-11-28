@@ -1,5 +1,10 @@
 # Changelog
 
+## Field feedback
+
+- Run from a checkout without `--state`, the CLI targets the live deployment named in the managed instruction block, rather than planning a duplicate install under `~/.engineering-infrastructure`.
+- `engineering-workflow` now covers defect fixes of any size, including one-line fixes, on the Fast tier. Recorded trigger runs had skipped one-line bug fixes (0/4).
+
 ## Runtime readiness
 
 - Distinguish Git input freshness from build input drift and missing verification evidence in live runtime and delivery checks.
