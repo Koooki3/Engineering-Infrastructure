@@ -1,0 +1,26 @@
+{
+  "benchmark": "Terminal-Bench 2.1",
+  "classification": "adapted verifier preflight",
+  "task": "log-summary-date-ranges",
+  "revision": "12b7565679ce5006230b820666353673a133db93",
+  "subject": "0f274aa97682c86514cfc6738a792790e3f810b8",
+  "cli": null,
+  "model": "gpt-6-astra",
+  "effort": "low",
+  "timeout_s": 180,
+  "order": [],
+  "source_hashes": {
+    "instruction.md": "c1d4516ad4ec2238209740eaf01291df9ab48b0028a3fc5df383c6f831453484",
+    "environment/log_generator_deterministic.py": "beb6eff59979e9aa0be63ce8a0f1b0df1178f92871f04ba9f76fa70cf8beb81c",
+    "tests/test_outputs.py": "2fc06a6ce1944ad82f84fb437395fa75ed8c0eadd385b92e375c27e5bc9cb2b4"
+  },
+  "runs": [],
+  "input_count": 164,
+  "input_manifest_sha256": "f20ed8903db39e82fa0d5f718cc856294fbf13e940c28d69d9c1a17e668c7781",
+  "reference_control": {
+    "missing_artifact_rejected": true,
+    "reference_tally_accepted": true,
+    "reference_csv_sha256": "bb05f30c1ee612b6ffe07c1f6944df58e2a950a27304f73bd64a9b2f1d238feb",
+    "inclusive_lookback_lower_bound_accepted": false
+  }
+}

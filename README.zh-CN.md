@@ -1,10 +1,28 @@
-# Engineering Infrastructure
+# Engineering-Infrastructure
 
 [English](README.md)
 
-面向多个编码 Agent 的用户级工程基础设施，包含工程工作流、Adaptive Skills 生命周期和 PR 交付三个 Kit。Bootstrap 部署三项 CORE Skills 及简短的全局路由指令。各项目继续使用自身的约定、构建和验证入口，领域 Skill 按实际任务加载。
+**给编码 Agent 一套从代码修改走到可验证交付的共同工作流。**
 
-![工程基础设施结构图](docs/diagrams/structure.png)
+![从修改到可验证交付，依次检查工作区、验证实际结果、完成交付并保留恢复路径。](docs/diagrams/engineering-infrastructure.png)
+
+每个用户环境安装一次，Codex、Claude Code、OpenCode 和 Antigravity 就能通过各自的原生路径发现三套 Kit。项目继续使用自己的约定、测试和部署命令。
+
+[快速开始](#快速开始) · [三套 Kit 如何协作](#三套-kit-如何协作) · [实测结果](#实测结果) · [实机验收](engineering-workflow-kit/reports/operational.md)
+
+## 分支看起来正常，运行版本却落后了
+
+上游引用更新时，当前分支可能还有工作没做完。工程工作流可以保留现场，在独立 Worktree 中集成选定的提交，再核对实际安装内容。若安装失败，部署事务可以恢复上一个验证通过的版本。到了交付环节，PR 草稿可以直接使用真实检查证据。
+
+## 三套 Kit 如何协作
+
+| Kit | 实际作用 |
+| --- | --- |
+| [Engineering Workflow](engineering-workflow-kit/README.md) | 按风险选择流程，把检查结果绑定到源码状态，并支持隔离集成、运行版本核对和恢复。 |
+| [Adaptive Skills](adaptive-skills-kit/README.md) | 优先复用本机能力，遇到缺口时查阅版本锁定的目录，按授权隔离暂存和审核。 |
+| [PR Authoring](pr-authoring-kit/README.md) | 根据上游规范把改动和验证证据整理成便于审查的 PR。 |
+
+Bootstrap 写入简短的全局入口。领域 Skills 按需加载，部署状态、私人盘点和恢复记录保存在本机。参见[项目生命周期](engineering-workflow-kit/engineering-workflow/references/lifecycle.md)和 [Skills 参考目录](adaptive-skills-kit/skills%20reference.md)。
 
 ## 快速开始
 
@@ -18,14 +36,14 @@ python tools/setup.py verify
 
 在没有项目级配置的目录开一个新会话，确认三项 CORE Skill 已被运行时发现。全局路径、历史部署迁移、回滚和新机器恢复见 [BOOTSTRAP](BOOTSTRAP.md)。盘点、更新、停用和反馈见 [OPTIMIZE](OPTIMIZE.md)。
 
-| Kit | 职责 |
-| --- | --- |
-| [Engineering Workflow](engineering-workflow-kit/README.md) | 工程风险分层、证据绑定、仓库同步、集成部署、工作树与知识治理 |
-| [Adaptive Skills](adaptive-skills-kit/README.md) | 能力解析、本机盘点、按需发现及受控部署、升级和归档 |
-| [PR Authoring](pr-authoring-kit/README.md) | 遵守上游政策的 PR 编写及正文校验 |
+## 实测结果
 
-[Skills 参考目录](adaptive-skills-kit/skills%20reference.md) 由注册表和版本锁生成。部署状态、私人盘点、回滚备份和反馈留在机器本地。默认获取模式为 `REPORT_ONLY`，激活第三方能力需事先配置明确的范围和内容指纹授权。
+**八个生命周期场景全部通过。** 仅检查产物是否存在会漏掉安装内容漂移，仅检查 Git 工作树是否干净会漏掉输入引用变化。运行时检查识别了这两类问题，安装失败后也恢复了此前验证通过的版本。
 
-实质 Git 任务启动或恢复时先检查当前仓库。按项目授权建立固定提交的集成候选，并用项目原生构建、测试、安装和探针验证实际运行版本。详见[仓库与工作空间生命周期](engineering-workflow-kit/engineering-workflow/references/lifecycle.md)。
+六项 Codex 配对试验中，**原生组和完整组均通过 3/6**。完整组每对任务的耗时差中位数为 **+9.7 秒**。这轮小样本评测展示了哪些检查能补足工程验证，以及它们带来的额外开销。
+
+![Codex 原生、纯提示词和完整体系在各项任务中的验收结果与会话耗时。](docs/diagrams/ei-eval-pilot.png)
+
+[英文技术报告](https://github.com/Koooki3/Engineering-Infrastructure/blob/main/evaluation/REPORT.md) · [任务结果与数据](https://github.com/Koooki3/Engineering-Infrastructure/blob/main/evaluation/RESULTS.md) · [复现说明](https://github.com/Koooki3/Engineering-Infrastructure/tree/main/evaluation)
 
 [验证命令](README.md#verification) · [本轮验证记录](engineering-workflow-kit/reports/vnext.md) · [图稿](docs/diagrams) · [变更记录](CHANGELOG.md) · [Apache-2.0](LICENSE)

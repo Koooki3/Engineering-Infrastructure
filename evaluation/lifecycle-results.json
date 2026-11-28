@@ -1,0 +1,612 @@
+{
+  "environment": {
+    "git": "git version 2.49.0.windows.1",
+    "platform": "Windows",
+    "python": "3.12.8"
+  },
+  "evaluation": "specialized offline lifecycle acceptance",
+  "method": {
+    "comparison_baselines": [
+      "clean git status alone versus receipt-bound named-ref freshness",
+      "installed and archived artifact existence alone versus runtime identity probe"
+    ],
+    "fixture_git_commit_dates": "2000-01-01T00:00:00+00:00",
+    "fixture_scope": "temporary local Git worktrees under evaluation/; removed on exit",
+    "model_trials": "not run",
+    "network": "not used; adaptive discovery is forced through a closed loopback proxy",
+    "scope_limit": "Fixture-backed CLI acceptance on this Windows host; no user deployment, GUI session, or cross-platform claim.",
+    "timings": "not collected"
+  },
+  "scenarios": [
+    {
+      "checks": [
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "inspect start exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "86fb8835c4a8d4e3a395f3549199c6cc5f302abb",
+          "expected": "86fb8835c4a8d4e3a395f3549199c6cc5f302abb",
+          "name": "inspect identifies fixture HEAD",
+          "status": "PASS"
+        },
+        {
+          "actual": "main",
+          "expected": "main",
+          "name": "inspect identifies main branch",
+          "status": "PASS"
+        },
+        {
+          "actual": "establish_baseline",
+          "expected": "establish_baseline",
+          "name": "inspect proposes baseline establishment",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "integrate release-one exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "READY",
+          "expected": "READY",
+          "name": "candidate phase",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "candidate includes selected feature",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "gate accepts ready integration exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "PASS",
+          "expected": "PASS",
+          "name": "ready integration gate",
+          "status": "PASS"
+        },
+        {
+          "actual": "PASS",
+          "expected": "PASS",
+          "name": "ready integration input check",
+          "status": "PASS"
+        },
+        {
+          "actual": "?? owner-note.tmp",
+          "expected": "?? owner-note.tmp",
+          "name": "primary dirty status preserved",
+          "status": "PASS"
+        },
+        {
+          "actual": "preserve this local note\n",
+          "expected": "preserve this local note\n",
+          "name": "primary note content preserved",
+          "status": "PASS"
+        },
+        {
+          "actual": "",
+          "expected": "",
+          "name": "primary tree clean after fixture cleanup",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "inspect start"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "integrate release-one"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "gate accepts ready integration"
+        }
+      ],
+      "name": "integration_isolation_and_primary_tree_protection",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "contract proposal preview exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "PREVIEW",
+          "expected": "PREVIEW",
+          "name": "contract preview is inert",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "contract apply probes inactive runtime exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "CONFIGURED",
+          "expected": "CONFIGURED",
+          "name": "contract registered after probe",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "deploy release-one exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "VERIFIED",
+          "expected": "VERIFIED",
+          "name": "first deployment status",
+          "status": "PASS"
+        },
+        {
+          "actual": "00b88b76c11c659724365f1d8977d2ed79c4ad0d",
+          "expected": "00b88b76c11c659724365f1d8977d2ed79c4ad0d",
+          "name": "runtime probe observed candidate SHA",
+          "status": "PASS"
+        },
+        {
+          "actual": "fixture-service",
+          "expected": "fixture-service",
+          "name": "runtime probe observed live instance",
+          "status": "PASS"
+        },
+        {
+          "actual": "f1b5e61e38cd7548a21cb431f0595a5c1f2edcbcfe00dbaadbbb46a31a172adf",
+          "expected": "f1b5e61e38cd7548a21cb431f0595a5c1f2edcbcfe00dbaadbbb46a31a172adf",
+          "name": "installed bytes match verified artifact",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "manual artifact-exists-only baseline",
+          "note": "Existence alone does not establish runtime identity.",
+          "status": "PASS"
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "name": "runtime rejects installed version drift exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "runtime drift detection",
+          "note": "matched expected failure class",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "runtime restored to current exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "CURRENT",
+          "expected": "CURRENT",
+          "name": "runtime freshness after exact restore",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "contract proposal preview"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "contract apply probes inactive runtime"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "deploy release-one"
+        },
+        {
+          "exit_code": 1,
+          "expected_exit_code": 1,
+          "name": "runtime rejects installed version drift"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "runtime restored to current"
+        }
+      ],
+      "name": "verified_deployment_and_runtime_identity",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "actual": true,
+          "expected": true,
+          "name": "manual clean-worktree-only baseline",
+          "note": "This manual check does not compare refs named by the deployment receipt.",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "feature input moved from receipt pin",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "runtime reports stale named input exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "STALE_INPUTS",
+          "expected": "STALE_INPUTS",
+          "name": "runtime freshness",
+          "status": "PASS"
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "name": "delivery gate blocks stale runtime exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "BLOCKED",
+          "expected": "BLOCKED",
+          "name": "gate status",
+          "status": "PASS"
+        },
+        {
+          "actual": "BLOCKED",
+          "expected": "BLOCKED",
+          "name": "gate input check",
+          "status": "PASS"
+        },
+        {
+          "actual": "BLOCKED",
+          "expected": "BLOCKED",
+          "name": "gate runtime check",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "runtime reports stale named input"
+        },
+        {
+          "exit_code": 1,
+          "expected_exit_code": 1,
+          "name": "delivery gate blocks stale runtime"
+        }
+      ],
+      "name": "stale_named_input_evidence_and_gate",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "integrate release-two exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "READY",
+          "expected": "READY",
+          "name": "refreshed candidate phase",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "deploy release-two exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "VERIFIED",
+          "expected": "VERIFIED",
+          "name": "refreshed deployment status",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "refreshed deployment SHA differs",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "runtime after refreshed deploy exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "CURRENT",
+          "expected": "CURRENT",
+          "name": "fresh runtime state",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "integrate release-two"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "deploy release-two"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "runtime after refreshed deploy"
+        }
+      ],
+      "name": "refreshed_candidate_deploys_after_stale_evidence",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "integrate release-failed exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "READY",
+          "expected": "READY",
+          "name": "failure candidate isolated and ready",
+          "status": "PASS"
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "name": "deploy install failure invokes recovery exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "failed install reported",
+          "note": "matched expected failure class",
+          "status": "PASS"
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "name": "pending recovery journal cleared",
+          "status": "PASS"
+        },
+        {
+          "actual": "a97e5497d5fd46694af8d7933b72082666e027d8",
+          "expected": "a97e5497d5fd46694af8d7933b72082666e027d8",
+          "name": "previous verified SHA retained",
+          "status": "PASS"
+        },
+        {
+          "actual": "3a46c2970f02f254f51849f4d4f08801c7d56adaf53b934af0e8c44a2fe375e0",
+          "expected": "3a46c2970f02f254f51849f4d4f08801c7d56adaf53b934af0e8c44a2fe375e0",
+          "name": "previous verified bytes restored",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "runtime healthy after recovery exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "runtime healthy after recovery",
+          "status": "PASS"
+        },
+        {
+          "actual": "CURRENT",
+          "expected": "CURRENT",
+          "name": "runtime current after recovery",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "integrate release-failed"
+        },
+        {
+          "exit_code": 1,
+          "expected_exit_code": 1,
+          "name": "deploy install failure invokes recovery"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "runtime healthy after recovery"
+        }
+      ],
+      "name": "failed_install_recovers_previous_verified_release",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "actual": 1,
+          "expected": 1,
+          "name": "cleanup refuses dirty owned worktree exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "cleanup refusal class",
+          "note": "matched expected failure class",
+          "status": "PASS"
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "cleanup archives clean released worktree exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "clean owned worktree removal applied",
+          "status": "PASS"
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "name": "archived worktree absent",
+          "status": "PASS"
+        },
+        {
+          "actual": "00b88b76c11c659724365f1d8977d2ed79c4ad0d",
+          "expected": "00b88b76c11c659724365f1d8977d2ed79c4ad0d",
+          "name": "archive ref points to candidate",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 1,
+          "expected_exit_code": 1,
+          "name": "cleanup refuses dirty owned worktree"
+        },
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "cleanup archives clean released worktree"
+        }
+      ],
+      "name": "cleanup_protects_changes_then_archives_owned_worktree",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "adaptive reference discovery exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": "REVIEW_REFERENCE",
+          "expected": "REVIEW_REFERENCE",
+          "name": "known capability routes to reference review",
+          "status": "PASS"
+        },
+        {
+          "actual": "vercel-react-best-practices",
+          "expected": "vercel-react-best-practices",
+          "name": "reference candidate identity",
+          "status": "PASS"
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "name": "no external candidate returned",
+          "status": "PASS"
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "name": "no public-search cache created",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "adaptive reference discovery"
+        }
+      ],
+      "name": "adaptive_reference_discovery_stays_offline",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        {
+          "actual": 0,
+          "expected": 0,
+          "name": "valid PR body exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "valid PR body has no errors",
+          "status": "PASS"
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "name": "private path rejected exit code",
+          "status": "PASS"
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "name": "private path error emitted",
+          "status": "PASS"
+        }
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "name": "valid PR body"
+        },
+        {
+          "exit_code": 1,
+          "expected_exit_code": 1,
+          "name": "private path rejected"
+        }
+      ],
+      "name": "pr_linter_accepts_valid_body_and_rejects_private_path",
+      "status": "PASS"
+    }
+  ],
+  "schema": 1,
+  "subject": {
+    "commit": "0f274aa97682c86514cfc6738a792790e3f810b8",
+    "evaluator_sha256": "f46e5cfe250bda168891453cc2ad8aefc63e5c0541c270d33676a48f1a3ed220",
+    "lifecycle_source_sha256": "0a347ec6d5e7ffe4b1902ee34859218a1b939c102b21b2477b2071beca139f8b",
+    "repository": "Engineering-Infrastructure"
+  },
+  "summary": {
+    "checks": 67,
+    "commands": 21,
+    "failed": 0,
+    "overall": "PASS",
+    "passed": 8
+  }
+}

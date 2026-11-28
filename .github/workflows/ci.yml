@@ -26,3 +26,7 @@ jobs:
         run: python -I -B -W error::ResourceWarning -m unittest discover -s adaptive-skills-kit/tests
       - name: Check generated catalog and lock
         run: python -B tools/setup.py sync-reference --check
+      - name: Verify evaluation receipts and lifecycle fixtures
+        run: |
+          python -B evaluation/analyze.py evaluation/pilot-results.json
+          python -B evaluation/lifecycle.py

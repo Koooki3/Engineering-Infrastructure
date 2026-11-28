@@ -1,0 +1,52 @@
+{
+  "benchmark": "Terminal-Bench 2.1",
+  "classification": "adapted task",
+  "task": "log-summary-date-ranges",
+  "revision": "12b7565679ce5006230b820666353673a133db93",
+  "subject": "0f274aa97682c86514cfc6738a792790e3f810b8",
+  "cli": "codex-cli 0.163.0",
+  "model": "gpt-6-astra",
+  "effort": "low",
+  "timeout_s": 180,
+  "order": [
+    "D",
+    "A"
+  ],
+  "source_hashes": {
+    "instruction.md": "c1d4516ad4ec2238209740eaf01291df9ab48b0028a3fc5df383c6f831453484",
+    "environment/log_generator_deterministic.py": "beb6eff59979e9aa0be63ce8a0f1b0df1178f92871f04ba9f76fa70cf8beb81c",
+    "tests/test_outputs.py": "2fc06a6ce1944ad82f84fb437395fa75ed8c0eadd385b92e375c27e5bc9cb2b4"
+  },
+  "runs": [
+    {
+      "condition": "D",
+      "started_utc": "2026-11-28T11:57:29.077048+00:00",
+      "ended_utc": "2026-11-28T11:57:33.117894+00:00",
+      "distribution": "c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21",
+      "exit_code": 1,
+      "seconds": 4.041,
+      "tokens": null,
+      "core_invoked": [],
+      "status": "CLI_FAILURE",
+      "inputs_unchanged": true,
+      "original_assertions_passed": false,
+      "csv_sha256": null
+    },
+    {
+      "condition": "A",
+      "started_utc": "2026-11-28T11:57:33.155224+00:00",
+      "ended_utc": "2026-11-28T11:57:36.945136+00:00",
+      "distribution": null,
+      "exit_code": 1,
+      "seconds": 3.79,
+      "tokens": null,
+      "core_invoked": [],
+      "status": "CLI_FAILURE",
+      "inputs_unchanged": true,
+      "original_assertions_passed": false,
+      "csv_sha256": null
+    }
+  ],
+  "input_count": 164,
+  "input_manifest_sha256": "f20ed8903db39e82fa0d5f718cc856294fbf13e940c28d69d9c1a17e668c7781"
+}

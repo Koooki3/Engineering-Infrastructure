@@ -1,5 +1,10 @@
 # Changelog
 
+## Empirical evaluation
+
+- Publish a six-task paired Codex pilot, standalone lifecycle scenarios, and a reproducible Terminal-Bench verifier adaptation.
+- Update the English and Chinese project introductions with a workflow cover, an evidence chart, and links to reproduce the results.
+
 ## Field feedback
 
 - Run from a checkout without `--state`, the CLI targets the live deployment named in the managed instruction block, rather than planning a duplicate install under `~/.engineering-infrastructure`.

@@ -1,19 +1,28 @@
-# Engineering Infrastructure
+# Engineering-Infrastructure
 
 [简体中文](README.zh-CN.md)
 
-Three portable Kits give coding agents a common engineering workflow, evidence tools, a skills lifecycle, and pull request guidance. The bootstrap installs the three CORE Skills and a short user-level instruction block. Domain skills stay on demand.
+**Give your coding agents a shared path from a code change to verified delivery.**
 
-```mermaid
-flowchart LR
-    G[Global setup] --> W[Engineering workflow]
-    G --> A[Adaptive skills]
-    G --> P[PR authoring]
-    W -->|Capability gap| A
-    W -->|Delivery| P
-    A --> R[Registry and reviewed versions]
-    W --> E[Executable evidence]
-```
+![From change to verified delivery. Inspect the workspace, verify the result, and deliver with a recovery path.](docs/diagrams/engineering-infrastructure.png)
+
+Install once per user environment. Codex, Claude Code, OpenCode, and Antigravity can use the same three Kits through native discovery paths. Each repository keeps its own rules, tests, and deployment commands.
+
+[Quick start](#quick-start) · [How it works](#how-it-works) · [Measured results](#measured-results) · [Operational evidence](engineering-workflow-kit/reports/operational.md)
+
+## When the branch is green but the deployment is stale
+
+An upstream ref moves while a feature is still in progress. Engineering Workflow can preserve the active checkout, build the selected inputs in an isolated worktree, and verify what is actually installed. If the installation fails, the deployment transaction can recover the prior verified release. At handoff, the PR draft can cite the checks that actually ran.
+
+## How it works
+
+| Kit | What it gives your agent |
+| --- | --- |
+| [Engineering Workflow](engineering-workflow-kit/README.md) | Risk-based workflow, checks tied to source state, isolated integration, runtime freshness probes, and recovery. |
+| [Adaptive Skills](adaptive-skills-kit/README.md) | Find installed capabilities first, consult a pinned catalog when a gap remains, and stage approved versions for review. |
+| [PR Authoring](pr-authoring-kit/README.md) | Turn the change and its evidence into a reviewable PR that respects upstream policy. |
+
+The bootstrap adds a short user-level entry point. Domain Skills load on demand, and machine-specific plans, inventories, and recovery data stay local. See the [project lifecycle](engineering-workflow-kit/engineering-workflow/references/lifecycle.md) and [Skills reference](adaptive-skills-kit/skills%20reference.md).
 
 ## Quick start
 
@@ -27,15 +36,15 @@ python tools/setup.py verify
 
 Open a fresh agent session in a project and check the three CORE Skills. See [BOOTSTRAP](BOOTSTRAP.md) for discovery paths, state location, migration, and rollback. See [OPTIMIZE](OPTIMIZE.md) for drift checks, updates, retirement, and feedback.
 
-| Kit | Role |
-| --- | --- |
-| [Engineering Workflow](engineering-workflow-kit/README.md) | Risk routing, evidence capture, repository synchronization, integration, deployment and workspace governance |
-| [Adaptive Skills](adaptive-skills-kit/README.md) | Inventory, local-first capability resolution, controlled acquisition, activation and retirement |
-| [PR Authoring](pr-authoring-kit/README.md) | Upstream-aware PR composition and body lint |
+## Measured results
 
-[Skills reference](adaptive-skills-kit/skills%20reference.md) is generated from the registry and bundled locks. Machine plans, receipts, private inventory, and rollback data live outside the repository. Project-level instructions and build processes continue to apply.
+**Eight lifecycle scenarios passed.** An existence check missed a changed deployment, and a clean Git status missed a moved input ref. Runtime verification detected both. The failed-install scenario recovered the previously verified release.
 
-Substantive Git work starts with a local lifecycle inspection. Integration and deployment use explicit commit inputs and an authorized project-native contract. Use the [repository and workspace lifecycle](engineering-workflow-kit/engineering-workflow/references/lifecycle.md) to reconcile versions, verify the running instance and retain project-local checkpoints.
+The six-task Codex pilot recorded **3/6 accepted artifacts for Native and 3/6 for Full**. Full took a median **9.7 seconds longer per pair**. The per-task results show where the additional workflow changed time and effort.
+
+![Per-task acceptance and elapsed seconds for native, prompt-only and full Codex configurations.](docs/diagrams/ei-eval-pilot.png)
+
+[Technical report](https://github.com/Koooki3/Engineering-Infrastructure/blob/main/evaluation/REPORT.md) · [Results and data](https://github.com/Koooki3/Engineering-Infrastructure/blob/main/evaluation/RESULTS.md) · [Reproduce the evaluation](https://github.com/Koooki3/Engineering-Infrastructure/tree/main/evaluation)
 
 ## Verification
 

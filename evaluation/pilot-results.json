@@ -1,0 +1,437 @@
+{
+  "metadata": {
+    "agent": "codex-cli 0.163.0",
+    "core": {
+      "adaptive-skills": "b22e24173d675569b01a54f3778b5cbd1439da747b7b48de62c90145edd235ec",
+      "engineering-workflow": "f3bf264d808700f6aa84e4253b1c2626e44ff138e34fc617f63dd0210ef251b7",
+      "pr-authoring": "afd40bd953fdef409d52f9f7fc382c4791cb5b83ff42eeaf4e64def9e50f8acf"
+    },
+    "effort": "low",
+    "git": "git version 2.53.0",
+    "lock_sha256": "73ba34d500897fc107cf25da4ee44cff009eedfce953985101cda5b1b5f3feb4",
+    "model": "gpt-6-astra",
+    "order": [
+      [
+        "latest",
+        "AD"
+      ],
+      [
+        "preview",
+        "DA"
+      ],
+      [
+        "pr",
+        "BAD"
+      ],
+      [
+        "freshness",
+        "DA"
+      ],
+      [
+        "integrate",
+        "DAB"
+      ],
+      [
+        "adapter",
+        "DA"
+      ]
+    ],
+    "platform": "Linux 6.18.58.1-microsoft-standard-WSL2",
+    "protocol": "0.1",
+    "python": "3.14.4",
+    "runner_sha256": "e8249eb9e1aa603d2505ac7d73c9704ffac97ccf1a35fa960ad6f679b0973c6b",
+    "subject": "0f274aa97682c86514cfc6738a792790e3f810b8",
+    "timeout_s": 150
+  },
+  "runs": [
+    {
+      "artifacts": {},
+      "condition": "A",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:48:06.632494+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "f0d67e6ba26af043e1ac9c78e5bc007b59c4e2bbc36ea0ffd785a58724e3f2cc",
+      "human_interventions": 0,
+      "id": "latest-A",
+      "initial_sha": "c3acf27729ec60f9c65958a03eefbd81037e854c",
+      "oracle_pass": false,
+      "seconds": 44.839,
+      "setup_s": 0.013,
+      "started_utc": "2026-11-28T11:47:21.793005+00:00",
+      "status": "FAIL",
+      "task": "latest",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 87552,
+        "input_tokens": 91473,
+        "output_tokens": 1214,
+        "reasoning_output_tokens": 46
+      },
+      "verifier_error": "CalledProcessError",
+      "verify_s": 0.181
+    },
+    {
+      "artifacts": {},
+      "condition": "D",
+      "core_invoked": [
+        "engineering-workflow"
+      ],
+      "distribution": "c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21",
+      "ended_utc": "2026-11-28T11:49:20.997461+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "41a0d86863799b95e35c19d47bed807cba1a6ee7c00a8842377502fd6427b07b",
+      "human_interventions": 0,
+      "id": "latest-D",
+      "initial_sha": "c3acf27729ec60f9c65958a03eefbd81037e854c",
+      "oracle_pass": false,
+      "seconds": 73.995,
+      "setup_s": 0.166,
+      "started_utc": "2026-11-28T11:48:07.002142+00:00",
+      "status": "FAIL",
+      "task": "latest",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 186496,
+        "input_tokens": 196848,
+        "output_tokens": 1972,
+        "reasoning_output_tokens": 115
+      },
+      "verifier_error": "CalledProcessError",
+      "verify_s": 0.118
+    },
+    {
+      "artifacts": {},
+      "condition": "D",
+      "core_invoked": [
+        "engineering-workflow"
+      ],
+      "distribution": "c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21",
+      "ended_utc": "2026-11-28T11:50:02.021595+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "9b8dc513c1a6f0e64ebc0eabeb14ec7c93eca6a9026f94f8b378eba1c4823900",
+      "human_interventions": 0,
+      "id": "preview-D",
+      "initial_sha": "86ece09e5db325da570bc944b52a7f53b50ef839",
+      "oracle_pass": true,
+      "seconds": 40.724,
+      "setup_s": 0.151,
+      "started_utc": "2026-11-28T11:49:21.297632+00:00",
+      "status": "PASS",
+      "task": "preview",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 82944,
+        "input_tokens": 90938,
+        "output_tokens": 1153,
+        "reasoning_output_tokens": 27
+      },
+      "verifier_error": null,
+      "verify_s": 0.118
+    },
+    {
+      "artifacts": {},
+      "condition": "A",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:50:39.484328+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "9b8dc513c1a6f0e64ebc0eabeb14ec7c93eca6a9026f94f8b378eba1c4823900",
+      "human_interventions": 0,
+      "id": "preview-A",
+      "initial_sha": "86ece09e5db325da570bc944b52a7f53b50ef839",
+      "oracle_pass": true,
+      "seconds": 37.308,
+      "setup_s": 0.012,
+      "started_utc": "2026-11-28T11:50:02.176723+00:00",
+      "status": "PASS",
+      "task": "preview",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 68992,
+        "input_tokens": 75619,
+        "output_tokens": 1044,
+        "reasoning_output_tokens": 0
+      },
+      "verifier_error": null,
+      "verify_s": 0.101
+    },
+    {
+      "artifacts": {
+        "PR.md": "ac5a2010d9d1c76d7c8cf206fe1e3437c9500609034dbe551917c56f4839dc87"
+      },
+      "condition": "B",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:51:02.625655+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "human_interventions": 0,
+      "id": "pr-B",
+      "initial_sha": "1c0ceaa56c2eaa024e8612526fcdc2a1b15121b7",
+      "oracle_pass": true,
+      "seconds": 23.007,
+      "setup_s": 0.01,
+      "started_utc": "2026-11-28T11:50:39.618316+00:00",
+      "status": "PASS",
+      "task": "pr",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 53248,
+        "input_tokens": 59811,
+        "output_tokens": 580,
+        "reasoning_output_tokens": 0
+      },
+      "verifier_error": null,
+      "verify_s": 0.0
+    },
+    {
+      "artifacts": {
+        "PR.md": "6b2647b6b0dbd6c54dbd9884f9c5c37b4c86de18fb2070979ab65bf7f848f55d"
+      },
+      "condition": "A",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:51:23.822437+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "human_interventions": 0,
+      "id": "pr-A",
+      "initial_sha": "1c0ceaa56c2eaa024e8612526fcdc2a1b15121b7",
+      "oracle_pass": true,
+      "seconds": 21.152,
+      "setup_s": 0.012,
+      "started_utc": "2026-11-28T11:51:02.670593+00:00",
+      "status": "PASS",
+      "task": "pr",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 55936,
+        "input_tokens": 59240,
+        "output_tokens": 444,
+        "reasoning_output_tokens": 0
+      },
+      "verifier_error": null,
+      "verify_s": 0.0
+    },
+    {
+      "artifacts": {
+        "PR.md": "a18c6de2a18d622d3c61023c50b34f6b1cc46f18931dbfea211c6f24ab3c3724"
+      },
+      "condition": "D",
+      "core_invoked": [
+        "pr-authoring"
+      ],
+      "distribution": "c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21",
+      "ended_utc": "2026-11-28T11:52:01.105667+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "human_interventions": 0,
+      "id": "pr-D",
+      "initial_sha": "1c0ceaa56c2eaa024e8612526fcdc2a1b15121b7",
+      "oracle_pass": true,
+      "seconds": 37.115,
+      "setup_s": 0.136,
+      "started_utc": "2026-11-28T11:51:23.990904+00:00",
+      "status": "PASS",
+      "task": "pr",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 77824,
+        "input_tokens": 94011,
+        "output_tokens": 1031,
+        "reasoning_output_tokens": 31
+      },
+      "verifier_error": null,
+      "verify_s": 0.0
+    },
+    {
+      "artifacts": {
+        "check.py": "99f0cfb5426da6f6f8b9b361234ef131f72ab456e466e07477bb2cdf76c66dd8"
+      },
+      "condition": "D",
+      "core_invoked": [
+        "engineering-workflow"
+      ],
+      "distribution": "c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21",
+      "ended_utc": "2026-11-28T11:52:59.593101+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "9d931028de81c2037b6b567fd63cce7f1e9414380c6f66466b21a5a263e0cd25",
+      "human_interventions": 0,
+      "id": "freshness-D",
+      "initial_sha": "46e13b76d8f806ea1180829ed74f95332198900b",
+      "oracle_pass": true,
+      "seconds": 58.244,
+      "setup_s": 0.201,
+      "started_utc": "2026-11-28T11:52:01.349055+00:00",
+      "status": "PASS",
+      "task": "freshness",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 96128,
+        "input_tokens": 113138,
+        "output_tokens": 1845,
+        "reasoning_output_tokens": 14
+      },
+      "verifier_error": null,
+      "verify_s": 0.169
+    },
+    {
+      "artifacts": {
+        "check.py": "61672b0aa90e7db16790342e67e256bf794eeeeb1de3c99081afdbc09ac60301"
+      },
+      "condition": "A",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:54:10.026217+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "2a079dffe4ca83a05880ae388256b8aeb4bc3725a57b1b6ce330e59f2b622f57",
+      "human_interventions": 0,
+      "id": "freshness-A",
+      "initial_sha": "46e13b76d8f806ea1180829ed74f95332198900b",
+      "oracle_pass": true,
+      "seconds": 70.223,
+      "setup_s": 0.009,
+      "started_utc": "2026-11-28T11:52:59.803050+00:00",
+      "status": "PASS",
+      "task": "freshness",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 85504,
+        "input_tokens": 94404,
+        "output_tokens": 2652,
+        "reasoning_output_tokens": 73
+      },
+      "verifier_error": null,
+      "verify_s": 0.164
+    },
+    {
+      "artifacts": {},
+      "condition": "D",
+      "core_invoked": [
+        "engineering-workflow"
+      ],
+      "distribution": "c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21",
+      "ended_utc": "2026-11-28T11:55:01.444700+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "60ff15949f2f1604e1e8a055b26765e85558569fbe2aed0b215c9da20fb05b09",
+      "human_interventions": 0,
+      "id": "integrate-D",
+      "initial_sha": "4b2f4f8f6229dad1b6dd2d3876ab7aaa21fc201b",
+      "oracle_pass": false,
+      "seconds": 51.064,
+      "setup_s": 0.162,
+      "started_utc": "2026-11-28T11:54:10.380364+00:00",
+      "status": "FAIL",
+      "task": "integrate",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 106496,
+        "input_tokens": 116072,
+        "output_tokens": 1393,
+        "reasoning_output_tokens": 180
+      },
+      "verifier_error": "CalledProcessError",
+      "verify_s": 0.039
+    },
+    {
+      "artifacts": {},
+      "condition": "A",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:56:04.013449+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "60ff15949f2f1604e1e8a055b26765e85558569fbe2aed0b215c9da20fb05b09",
+      "human_interventions": 0,
+      "id": "integrate-A",
+      "initial_sha": "4b2f4f8f6229dad1b6dd2d3876ab7aaa21fc201b",
+      "oracle_pass": false,
+      "seconds": 62.409,
+      "setup_s": 0.087,
+      "started_utc": "2026-11-28T11:55:01.604189+00:00",
+      "status": "FAIL",
+      "task": "integrate",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 83712,
+        "input_tokens": 94673,
+        "output_tokens": 1901,
+        "reasoning_output_tokens": 173
+      },
+      "verifier_error": "CalledProcessError",
+      "verify_s": 0.015
+    },
+    {
+      "artifacts": {},
+      "condition": "B",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:56:45.186315+00:00",
+      "exit_code": 0,
+      "git_diff_sha256": "60ff15949f2f1604e1e8a055b26765e85558569fbe2aed0b215c9da20fb05b09",
+      "human_interventions": 0,
+      "id": "integrate-B",
+      "initial_sha": "4b2f4f8f6229dad1b6dd2d3876ab7aaa21fc201b",
+      "oracle_pass": false,
+      "seconds": 41.083,
+      "setup_s": 0.046,
+      "started_utc": "2026-11-28T11:56:04.103108+00:00",
+      "status": "FAIL",
+      "task": "integrate",
+      "tokens": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 92160,
+        "input_tokens": 112504,
+        "output_tokens": 827,
+        "reasoning_output_tokens": 152
+      },
+      "verifier_error": "CalledProcessError",
+      "verify_s": 0.01
+    },
+    {
+      "artifacts": {},
+      "condition": "D",
+      "core_invoked": [
+        "adaptive-skills",
+        "engineering-workflow"
+      ],
+      "distribution": "c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21",
+      "ended_utc": "2026-11-28T11:57:17.960018+00:00",
+      "exit_code": 1,
+      "git_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "human_interventions": 0,
+      "id": "adapter-D",
+      "initial_sha": "2b2afbaf52ef4011cbbbd5118e72726e07340357",
+      "oracle_pass": false,
+      "seconds": 31.05,
+      "setup_s": 1.685,
+      "started_utc": "2026-11-28T11:56:46.910192+00:00",
+      "status": "FAIL",
+      "task": "adapter",
+      "tokens": null,
+      "verifier_error": "CalledProcessError",
+      "verify_s": 0.304
+    },
+    {
+      "artifacts": {},
+      "condition": "A",
+      "core_invoked": [],
+      "distribution": null,
+      "ended_utc": "2026-11-28T11:57:24.497660+00:00",
+      "exit_code": 1,
+      "git_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "human_interventions": 0,
+      "id": "adapter-A",
+      "initial_sha": "2b2afbaf52ef4011cbbbd5118e72726e07340357",
+      "oracle_pass": false,
+      "seconds": 3.942,
+      "setup_s": 2.233,
+      "started_utc": "2026-11-28T11:57:20.555462+00:00",
+      "status": "CLI_FAILURE",
+      "task": "adapter",
+      "tokens": null,
+      "verifier_error": "AssertionError",
+      "verify_s": 0.457
+    }
+  ]
+}
