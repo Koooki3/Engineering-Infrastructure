@@ -85,15 +85,48 @@ class Lifecycle(unittest.TestCase):
         self.assertEqual(rules.read_bytes(), original)
         self.assertFalse((self.home / '.agents/skills/pr-authoring').exists())
 
+    def rules(self):
+        return [pair[1] for pair in global_setup.adapters(self.home).values()]
+
     def test_checkout_without_state_targets_the_live_deployment(self):
-        self.apply()
+        fallback = (self.home / '.engineering-infrastructure').absolute()
         with patch.dict(os.environ, {'ENGINEERING_INFRA_HOME': ''}):
+            self.assertEqual(skills.default_state(self.home), fallback)  # first install
+            self.apply()
             self.assertEqual(skills.default_state(self.home), self.state.absolute())
-            (self.home / '.claude/CLAUDE.md').unlink()
-            (self.home / '.codex/AGENTS.md').unlink()
-            (self.home / '.config/opencode/AGENTS.md').unlink()
-            (self.home / '.gemini/GEMINI.md').unlink()
-            self.assertEqual(skills.default_state(self.home), (self.home / '.engineering-infrastructure').absolute())
+            fallback.mkdir()
+            (fallback / 'deployment.json').write_text('{}', encoding='utf-8')  # leftover default state
+            self.assertEqual(skills.default_state(self.home), self.state.absolute())
+        with patch.dict(os.environ, {'ENGINEERING_INFRA_HOME': str(self.base / 'explicit')}):
+            self.assertEqual(skills.default_state(self.home), (self.base / 'explicit').absolute())
+
+    def test_state_discovery_fails_closed_on_conflict_or_damage(self):
+        self.apply()
+        claude = global_setup.adapters(self.home)['claude'][1]
+        original = claude.read_text(encoding='utf-8')
+        other = self.base / 'other'
+        other.mkdir()
+        (other / 'deployment.json').write_text(json.dumps({'docs': {str(claude): {}}}), encoding='utf-8')
+        cases = {
+            'different deployments': original.replace(str(self.state), str(other)),
+            'not owned': original.replace(str(self.state), str(self.base / 'stray')),
+            'duplicate': original + original[original.index(global_setup.START):],
+            'entry point': original.replace('Global maintenance entry point', 'Entry'),
+        }
+        (self.base / 'stray/runtime').mkdir(parents=True)
+        (self.base / 'stray/deployment.json').write_text('{"docs": {}}', encoding='utf-8')
+        with patch.dict(os.environ, {'ENGINEERING_INFRA_HOME': ''}):
+            for name, text in cases.items():
+                with self.subTest(name):
+                    claude.write_text(text, encoding='utf-8')
+                    with self.assertRaises(ValueError):
+                        skills.default_state(self.home)
+            claude.write_text(original.replace(str(self.state), str(self.base / 'gone')), encoding='utf-8')
+            with self.assertRaises(ValueError):
+                skills.default_state(self.home)  # block names a state that no longer exists
+            claude.write_text(original, encoding='utf-8')
+            (self.state / 'deployment.json').rename(self.state / 'deployment.moved')
+            self.assertEqual(skills.default_state(self.home), self.state.absolute())  # recoverable: history kept
 
     def test_inert_stage_review_version_update_archive_and_restore(self):
         self.apply()

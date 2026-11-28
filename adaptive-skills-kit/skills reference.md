@@ -106,7 +106,7 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Trust** Bundled core
 - **Status** BUNDLED
 - **Verified** 2026-11-26
-- **Version** `3a0029e6a5a8ea374c6e4501802f11bfd3381aaffaf037388a354683b7e95522`
+- **Version** `f3bf264d808700f6aa84e4253b1c2626e44ff138e34fc617f63dd0210ef251b7`
 
 ## team-mode
 
@@ -316,7 +316,7 @@ CORE tree hashes pin bundled content. Public bundle pins include the source revi
 - **Trust** Bundled core
 - **Status** BUNDLED
 - **Verified** 2026-11-26
-- **Version** `21ebfce5b5869263c51e27aec96f4c3524aa85cc7055ccae33fbc01ef521625e`
+- **Version** `f85894515d8dd30245164924f6b1e6b24f48d2aa2aa0a308001d600a1f40b23e`
 
 ## skills-maintenance
 

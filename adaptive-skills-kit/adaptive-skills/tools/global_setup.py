@@ -46,7 +46,8 @@ def state_at(root):
 
 def block(runtime):
     cli = runtime / 'tools/setup.py'
-    return ('For substantive engineering work, load `engineering-workflow` and use its risk and evidence rules. '
+    return ('For engineering work, including defect fixes of any size, load `engineering-workflow` and use its risk and evidence rules; '
+            'route by impact and risk, not line count. '
             'Run its repository lifecycle inspection when starting or resuming substantive Git work. '
             'Use `adaptive-skills` when a required capability is missing or an existing one needs evaluation. '
             'For pull request work, load `pr-authoring` and follow upstream policy. Keep project-specific rules in the project.\n\n'

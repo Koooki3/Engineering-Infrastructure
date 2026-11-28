@@ -464,7 +464,8 @@ def cmd_route(a):
                        if os.path.splitext(p)[1].lower() not in DOC_EXT and not p.startswith("docs/")]
             if non_doc:
                 tier = "Standard"
-                reasons.append(f"code or config changed ({len(non_doc)} files)")
+                reasons.append(f"code or config changed ({len(non_doc)} files); "
+                               "a low-risk local fix may run Fast with the reason recorded")
             std = [(p, why) for p in norm for rx, why in STANDARD_PATH if rx.search(p)]
             reasons += [f"{why}: {p}" for p, why in std[:2]]
     if tier == "Fast" and not reasons:

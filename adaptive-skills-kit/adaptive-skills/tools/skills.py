@@ -25,25 +25,54 @@ def output(value):
     print(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True))
 
 
+ENTRY = re.compile(r'Global maintenance entry point: `([^`\r\n]+)`')
+
+
+def _same(path):
+    return os.path.normcase(os.path.abspath(path))
+
+
 def deployed_state(home):
-    """State directory named by a managed instruction block in this home, if it holds a deployment."""
-    marker = 'Global maintenance entry point: `'
-    for _skills, rules in setup.adapters(home).values():
+    """The one state directory that the managed instruction blocks in this home belong to.
+
+    None when no adapter carries a block (first install). Raises when blocks are malformed,
+    point outside a state layout, are not owned by the state they name, or name more than
+    one state: the caller must then pass --state. Integrity is not required, so a state that
+    needs recover or rollback can still be located.
+    """
+    found = {}
+    for agent, (_skills, rules) in setup.adapters(home).items():
         try:
-            text = rules.read_text(encoding='utf-8')
-        except OSError:
+            text = rules.read_bytes().decode('utf-8-sig')
+        except FileNotFoundError:
             continue
-        start = text.find(setup.START)
-        if start < 0 or text.find(setup.END, start) < 0:
+        block = setup.extract_block(text)  # raises on duplicate or unbalanced markers
+        if block is None:
             continue
-        at = text.find(marker, start, text.find(setup.END, start))
-        if at < 0:
-            continue
-        cli = Path(text[at + len(marker):text.index('`', at + len(marker))])
-        root = cli.parent.parent.parent  # <state>/runtime/tools/setup.py
-        if (root / 'deployment.json').is_file():
-            return root
-    return None
+        match = ENTRY.findall(block)
+        if len(match) != 1:
+            raise ValueError(f'Managed instruction block in {rules} has no single entry point; pass --state')
+        cli = Path(match[0])
+        if [part.lower() for part in cli.parts[-3:]] != ['runtime', 'tools', 'setup.py']:
+            raise ValueError(f'Managed instruction block in {rules} does not name <state>/runtime/tools/setup.py; '
+                             'pass --state')
+        root = cli.parent.parent.parent
+        path = root / 'deployment.json'
+        if path.is_file():
+            try:
+                docs = read_json(path).get('docs', {})
+            except ValueError as exc:
+                raise ValueError(f'{path} is unreadable ({exc}); pass --state') from exc
+            if _same(rules) not in {_same(doc) for doc in docs}:
+                raise ValueError(f'{rules} is not owned by {root}; pass --state')
+        elif not (root / 'history').is_dir():
+            raise ValueError(f'Managed instruction block in {rules} names {root}, which holds no deployment; '
+                             'pass --state')
+        found.setdefault(_same(root), (root, []))[1].append(agent)
+    if len(found) > 1:
+        detail = '; '.join(f"{root} ({', '.join(agents)})" for root, agents in found.values())
+        raise ValueError(f'Agents point to different deployments: {detail}. Pass --state to choose one.')
+    return next(iter(found.values()))[0] if found else None
 
 
 def default_state(home):
@@ -51,11 +80,9 @@ def default_state(home):
         return Path(os.environ['ENGINEERING_INFRA_HOME']).absolute()
     if SOURCE.name == 'runtime' and (SOURCE.parent / 'deployment.json').is_file():
         return SOURCE.parent.absolute()
-    fallback = home / '.engineering-infrastructure'
-    if (fallback / 'deployment.json').is_file():
-        return fallback.absolute()
-    # A checkout run without --state must target the live deployment, not plan a second one.
-    return (deployed_state(home) or fallback).absolute()
+    # From a checkout, follow the deployment the agents actually use; a leftover default state
+    # must not shadow it. No managed block at all means a first install at the default location.
+    return (deployed_state(home) or home / '.engineering-infrastructure').absolute()
 
 
 def roots(args, home):
@@ -276,7 +303,6 @@ def plan(args, source, root, home):
 
 def run(args):
     home, source = args.home.absolute(), args.source.resolve()
-    root = args.state.absolute() if args.state else default_state(home)
     if args.command == 'sync-reference':
         path = source / 'adaptive-skills-kit'
         entries = catalog.catalog(path)
@@ -290,6 +316,7 @@ def run(args):
                 atomic(dest, data)
         output({'catalog': 'OK', 'entries': len(entries)})
         return 0
+    root = args.state.absolute() if args.state else default_state(home)
     if args.command == 'plan':
         state, changes = plan(args, source, root, home)
         output({'revision': state['revision'], 'changes': [str(path) for path, before, after in changes if before != describe(after)]})

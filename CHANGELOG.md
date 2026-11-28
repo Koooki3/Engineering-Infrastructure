@@ -3,6 +3,8 @@
 ## Field feedback
 
 - Run from a checkout without `--state`, the CLI targets the live deployment named in the managed instruction block, rather than planning a duplicate install under `~/.engineering-infrastructure`.
+- State discovery checks every adapter's managed block with the existing block parser, verifies the named state owns that instruction file, and fails closed on duplicate or malformed blocks, missing deployments or agents that point to different states. A leftover `~/.engineering-infrastructure` no longer shadows the live deployment; a state with pending recovery stays locatable.
+- The managed instruction block, `SKILL.md`, `ewk.py route` and the legacy v1 blocks now share one rule: route by impact and risk, not line count; low-risk fixes may run Fast with the reason recorded, and one-line changes touching concurrency, permissions, security or data escalate.
 - `engineering-workflow` now covers defect fixes of any size, including one-line fixes, on the Fast tier. Recorded trigger runs had skipped one-line bug fixes (0/4).
 
 ## Runtime readiness
