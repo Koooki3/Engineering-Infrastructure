@@ -8,7 +8,7 @@
 
 Install once per user environment. Codex, Claude Code, OpenCode, and Antigravity can use the same three Kits through native discovery paths. Each repository keeps its own rules, tests, and deployment commands.
 
-[Quick start](#quick-start) · [How it works](#how-it-works) · [Measured results](#measured-results) · [Operational evidence](engineering-workflow-kit/reports/operational.md)
+[Quick start](#quick-start) · [How it works](#how-it-works) · [Measured results](#measured-results) · [Operational evidence](https://github.com/Koooki3/Engineering-Infrastructure/blob/main/engineering-workflow-kit/reports/operational.md)
 
 ## When the branch is green but the deployment is stale
 

@@ -8,7 +8,7 @@
 
 每个用户环境安装一次，Codex、Claude Code、OpenCode 和 Antigravity 就能通过各自的原生路径发现三套 Kit。项目继续使用自己的约定、测试和部署命令。
 
-[快速开始](#快速开始) · [三套 Kit 如何协作](#三套-kit-如何协作) · [实测结果](#实测结果) · [实机验收](engineering-workflow-kit/reports/operational.md)
+[快速开始](#快速开始) · [三套 Kit 如何协作](#三套-kit-如何协作) · [实测结果](#实测结果) · [实机验收](https://github.com/Koooki3/Engineering-Infrastructure/blob/main/engineering-workflow-kit/reports/operational.md)
 
 ## 分支看起来正常，运行版本却落后了
 
