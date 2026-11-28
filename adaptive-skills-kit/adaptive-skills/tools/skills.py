@@ -13,7 +13,8 @@ import time
 import candidate
 import catalog
 import global_setup as setup
-from store import atomic, check_path, describe, digest, encode, files, locked, read_json, recover, rollback, signature, transact
+from store import (atomic, check_path, describe, digest, encode, files, locked, read_journal, read_json, recover,
+                   rollback, signature, transact)
 
 
 SOURCE = Path(__file__).resolve().parents[3]
@@ -32,6 +33,25 @@ def _same(path):
     return os.path.normcase(os.path.abspath(path))
 
 
+def deployment_owns_rules(root, rules):
+    state = setup.state_at(root)
+    if state is None:
+        journal = root / 'pending.json'
+        check_path(journal)
+        if not journal.is_file():
+            return False
+        targets = {_same(rec['dest']): rec for rec in read_journal(journal)}
+        deployment = targets.get(_same(root / 'deployment.json'))
+        if not deployment or (deployment['after'] or [None])[0] != 'file':
+            return False
+        record = targets.get(_same(rules))
+        if record and (record['after'] or [None])[0] == 'file':
+            return True
+        # Unchanged rules do not get a journal entry during an update.
+        state = setup.read_state(Path(deployment['scratch']) / 'old')
+    return state is not None and _same(rules) in {_same(doc) for doc in state['docs']}
+
+
 def deployed_state(home):
     """The one state directory that the managed instruction blocks in this home belong to.
 
@@ -43,31 +63,27 @@ def deployed_state(home):
     found = {}
     for agent, (_skills, rules) in setup.adapters(home).items():
         try:
-            text = rules.read_bytes().decode('utf-8-sig')
-        except FileNotFoundError:
-            continue
-        block = setup.extract_block(text)  # raises on duplicate or unbalanced markers
-        if block is None:
-            continue
-        match = ENTRY.findall(block)
-        if len(match) != 1:
-            raise ValueError(f'Managed instruction block in {rules} has no single entry point; pass --state')
-        cli = Path(match[0])
-        if [part.lower() for part in cli.parts[-3:]] != ['runtime', 'tools', 'setup.py']:
-            raise ValueError(f'Managed instruction block in {rules} does not name <state>/runtime/tools/setup.py; '
-                             'pass --state')
-        root = cli.parent.parent.parent
-        path = root / 'deployment.json'
-        if path.is_file():
+            check_path(rules)
             try:
-                docs = read_json(path).get('docs', {})
-            except ValueError as exc:
-                raise ValueError(f'{path} is unreadable ({exc}); pass --state') from exc
-            if _same(rules) not in {_same(doc) for doc in docs}:
-                raise ValueError(f'{rules} is not owned by {root}; pass --state')
-        elif not (root / 'history').is_dir():
-            raise ValueError(f'Managed instruction block in {rules} names {root}, which holds no deployment; '
-                             'pass --state')
+                text = rules.read_bytes().decode('utf-8-sig')
+            except FileNotFoundError:
+                continue
+            block = setup.extract_block(text)
+            if block is None:
+                continue
+            entries = ENTRY.findall(block)
+            if len(entries) != 1:
+                raise ValueError('Expected one managed maintenance entry point')
+            cli = Path(entries[0])
+            if (not cli.is_absolute() or '..' in cli.parts
+                    or [part.lower() for part in cli.parts[-3:]] != ['runtime', 'tools', 'setup.py']):
+                raise ValueError('Expected an absolute <state>/runtime/tools/setup.py entry point')
+            check_path(cli)
+            root = cli.parents[2]
+            if not deployment_owns_rules(root, rules):
+                raise ValueError(f'No deployment or pending transaction in {root} owns this instruction file')
+        except (OSError, TypeError, ValueError) as exc:
+            raise ValueError(f'Cannot locate deployment from {rules}: {exc}; pass --state') from exc
         found.setdefault(_same(root), (root, []))[1].append(agent)
     if len(found) > 1:
         detail = '; '.join(f"{root} ({', '.join(agents)})" for root, agents in found.values())
@@ -78,7 +94,8 @@ def deployed_state(home):
 def default_state(home):
     if os.environ.get('ENGINEERING_INFRA_HOME'):
         return Path(os.environ['ENGINEERING_INFRA_HOME']).absolute()
-    if SOURCE.name == 'runtime' and (SOURCE.parent / 'deployment.json').is_file():
+    if SOURCE.name == 'runtime' and any((SOURCE.parent / name).is_file()
+                                        for name in ('deployment.json', 'pending.json')):
         return SOURCE.parent.absolute()
     # From a checkout, follow the deployment the agents actually use; a leftover default state
     # must not shadow it. No managed block at all means a first install at the default location.

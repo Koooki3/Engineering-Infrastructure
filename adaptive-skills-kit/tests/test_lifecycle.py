@@ -36,10 +36,11 @@ class Lifecycle(unittest.TestCase):
         self.env.start()
         self.addCleanup(self.env.stop)
 
-    def cli(self, *args, code=0):
+    def cli(self, *args, code=0, discover=False):
         out, err = io.StringIO(), io.StringIO()
+        state_args = [] if discover else ['--state', str(self.state)]
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
-            result = skills.main(['--home', str(self.home), '--state', str(self.state), *args])
+            result = skills.main(['--home', str(self.home), *state_args, *args])
         self.assertEqual(result, code, err.getvalue())
         return json.loads(out.getvalue()) if out.getvalue() else err.getvalue()
 
@@ -106,15 +107,14 @@ class Lifecycle(unittest.TestCase):
         original = claude.read_text(encoding='utf-8')
         other = self.base / 'other'
         other.mkdir()
-        (other / 'deployment.json').write_text(json.dumps({'docs': {str(claude): {}}}), encoding='utf-8')
+        state = global_setup.state_at(self.state)
+        store.atomic(other / 'deployment.json', store.encode(state))
         cases = {
             'different deployments': original.replace(str(self.state), str(other)),
-            'not owned': original.replace(str(self.state), str(self.base / 'stray')),
             'duplicate': original + original[original.index(global_setup.START):],
             'entry point': original.replace('Global maintenance entry point', 'Entry'),
+            'relative path': original.replace(str(self.state), 'relative'),
         }
-        (self.base / 'stray/runtime').mkdir(parents=True)
-        (self.base / 'stray/deployment.json').write_text('{"docs": {}}', encoding='utf-8')
         with patch.dict(os.environ, {'ENGINEERING_INFRA_HOME': ''}):
             for name, text in cases.items():
                 with self.subTest(name):
@@ -125,8 +125,85 @@ class Lifecycle(unittest.TestCase):
             with self.assertRaises(ValueError):
                 skills.default_state(self.home)  # block names a state that no longer exists
             claude.write_text(original, encoding='utf-8')
-            (self.state / 'deployment.json').rename(self.state / 'deployment.moved')
-            self.assertEqual(skills.default_state(self.home), self.state.absolute())  # recoverable: history kept
+            deployment = self.state / 'deployment.json'
+            for name, malformed in {'array': [], 'null': None, 'empty': {}, 'schema': {**state, 'schema': 2},
+                                    'docs array': {**state, 'docs': []}, 'unowned': {**state, 'docs': {}}}.items():
+                with self.subTest(state=name):
+                    store.atomic(deployment, store.encode(malformed))
+                    self.assertIn('--state', self.cli('recover', code=1, discover=True))
+            deployment.unlink()
+            self.assertTrue((self.state / 'history').is_dir())
+            self.assertIn('--state', self.cli('recover', code=1, discover=True))
+
+    def test_state_discovery_rejects_linked_entry_without_blocking_explicit_recovery(self):
+        self.cli('apply', '--agents', 'codex')
+        runtime = self.state / 'runtime'
+        original = runtime.rename(self.base / 'runtime')
+        if os.name == 'nt':
+            subprocess.run(['cmd.exe', '/d', '/c', 'mklink', '/J', str(runtime), str(original)],
+                           capture_output=True, timeout=15, check=True)
+        else:
+            runtime.symlink_to(original, target_is_directory=True)
+        try:
+            with patch.dict(os.environ, {'ENGINEERING_INFRA_HOME': ''}):
+                self.assertIn('Linked path', self.cli('recover', code=1, discover=True))
+                self.assertFalse(self.cli('recover')['recovered'])
+        finally:
+            if os.name == 'nt':
+                runtime.rmdir()
+            else:
+                runtime.unlink()
+            original.rename(runtime)
+
+    def test_discovery_recovers_interrupted_first_install_and_update(self):
+        # Exit the writer process after a real filesystem replacement, before its cleanup handler.
+        script = """
+import os
+from pathlib import Path
+import sys
+sys.path.insert(0, sys.argv[1])
+import skills
+import store
+home, root = map(Path, sys.argv[2:4])
+updating = sys.argv[4] == 'update'
+if updating:
+    bundle = skills.setup.bundle
+    def changed(source):
+        shared, installed = bundle(source)
+        shared['update-probe.txt'] = b'updated runtime'
+        return shared, installed
+    skills.setup.bundle = changed
+replace = store.replace
+def stop_after_replace(source, dest, **kwargs):
+    replace(source, dest, **kwargs)
+    if ((updating and source == root / 'deployment.json') or
+            (not updating and dest == home / '.codex/AGENTS.md')):
+        os._exit(42)
+store.replace = stop_after_replace
+sys.exit(skills.main(['--home', str(home), '--state', str(root), 'apply', '--agents', 'codex']))
+"""
+        with patch.dict(os.environ, {'ENGINEERING_INFRA_HOME': ''}):
+            for phase in ('first', 'update'):
+                with self.subTest(phase=phase):
+                    proc = subprocess.run([sys.executable, '-B', '-c', script, str(Path(skills.__file__).parent),
+                                           str(self.home), str(self.state), phase],
+                                          capture_output=True, timeout=30)
+                    self.assertEqual(proc.returncode, 42, proc.stderr)
+                    self.assertFalse((self.state / 'deployment.json').exists())
+                    pending = self.state / 'pending.json'
+                    self.assertTrue(pending.is_file())
+                    if phase == 'first':
+                        self.assertFalse((self.state / 'history').exists())
+                        records = store.read_json(pending)
+                        store.atomic(pending, store.encode(records[:-1]))
+                        self.assertIn('--state', self.cli('recover', code=1, discover=True))
+                        store.atomic(pending, store.encode(records))
+                    self.assertTrue(self.cli('recover', discover=True)['recovered'])
+                    self.assertFalse(pending.exists())
+                    if phase == 'first':
+                        self.assertFalse(self.rules()[0].exists())
+                        self.cli('apply', '--agents', 'codex')
+                    self.assertEqual(self.cli('verify', discover=True)['integrity'], 'OK')
 
     def test_inert_stage_review_version_update_archive_and_restore(self):
         self.apply()

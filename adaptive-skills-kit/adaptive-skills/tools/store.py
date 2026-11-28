@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
 import tempfile
@@ -147,9 +148,32 @@ def describe(payload):
     return None
 
 
-def validate_recovery(journal, check_all=False):
+def read_journal(journal):
     check_path(journal)
     records = read_json(journal)
+    if not isinstance(records, list) or not records:
+        raise ValueError('Invalid transaction journal')
+    seen = set()
+    transaction = None
+    for index, rec in enumerate(records):
+        if not isinstance(rec, dict) or not {'dest', 'scratch', 'before', 'after'} <= rec.keys():
+            raise ValueError('Invalid transaction record')
+        dest, scratch = Path(rec['dest']), Path(rec['scratch'])
+        match = re.fullmatch(r'\.ei-([a-f0-9]{32})-' + str(index), scratch.name)
+        if (not dest.is_absolute() or dest in seen
+                or scratch.parent != dest.parent or not match or transaction not in (None, match[1])):
+            raise ValueError('Invalid transaction paths')
+        transaction = match[1]
+        seen.add(dest)
+        for sig in (rec['before'], rec['after']):
+            if sig is not None and (not isinstance(sig, list) or len(sig) != 2
+                                    or sig[0] not in ('file', 'tree', 'link') or not isinstance(sig[1], str)):
+                raise ValueError('Invalid transaction signature')
+    return records
+
+
+def validate_recovery(journal, check_all=False):
+    records = read_journal(journal)
     for rec in reversed(records):
         dest, scratch = Path(rec['dest']), Path(rec['scratch'])
         check_path(dest, include_leaf=False)

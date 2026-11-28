@@ -34,12 +34,21 @@ def selected_adapters(home, agents):
 
 
 def state_at(root):
-    path = root / 'deployment.json'
+    return read_state(root / 'deployment.json')
+
+
+def read_state(path):
     check_path(path)
     if not path.exists():
         return None
     result = read_json(path)
-    if result['schema'] != 1 or not CORE.issubset(result['managed']):
+    if (not isinstance(result, dict) or type(result.get('schema')) is not int or result['schema'] != 1
+            or not isinstance(result.get('revision'), str)
+            or not isinstance(result.get('adapters'), dict)
+            or not isinstance(result.get('managed'), dict) or not CORE.issubset(result['managed'])
+            or not isinstance(result.get('docs'), dict)
+            or any(not Path(name).is_absolute() or not isinstance(block, str)
+                   for name, block in result['docs'].items())):
         raise ValueError('Unsupported deployment state')
     return result
 
