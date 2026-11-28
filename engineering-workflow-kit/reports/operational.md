@@ -1,6 +1,6 @@
 # Operational verification
 
-The implementation checked in this round is `34ac407`, following `8bb4486`. Windows and WSL each passed 71 Engineering Workflow tests, 13 Adaptive Skills tests, and the generated catalog consistency check.
+The initial acceptance covered `34ac407`, following `8bb4486`. Windows and WSL each passed 71 Engineering Workflow tests, 13 Adaptive Skills tests, and the generated catalog consistency check.
 
 ## Correctness boundaries
 
@@ -34,7 +34,7 @@ Windows and WSL verified the same distribution fingerprint `ac6cf2c7870770bba70c
 | Windows OpenCode | Integrity verified | A new session invoked the installed lifecycle entry point for startup and delivery. Both checks completed. |
 | WSL Claude Code | Integrity verified | Found all three CORE Skills. OAuth authentication blocked model execution. |
 | Windows Claude Code | Integrity verified | Session invocation remains unverified. |
-| Windows Antigravity | Integrity verified | Session invocation was deferred because the reported weekly quota was exhausted. |
+| Windows Antigravity | Integrity verified | Subsequent workstation acceptance on `2882ef1` confirmed global rule inheritance, discovery of all three CORE Skills, and basic tool invocation. |
 
 The native project tests used a temporary installation of Skill Loom. Other software deployments depend on their own authorized contract and independent probe. The source and release CI remain the portable verification entry points. The workstation retains rollback history and local evidence.
 
@@ -44,4 +44,16 @@ Reproduced standalone runtime reporting `CURRENT` after changing a declared exte
 
 Resolved `frontend-design` through the catalog, staged the exact Apache-2.0 Markdown bundle, and reviewed both files. With explicit one-time user approval, used `TRUSTED_AUTO` for that digest in a disposable Windows Codex workspace with an expiring policy. Codex discovered and read the installed project Skill in a new session and completed the representative design-planning task. The rollback removed the isolated entry and fresh discovery confirmed its absence. The regular Windows and WSL states use `REPORT_ONLY`.
 
-Claude Code and Antigravity retain the authentication and quota findings above. Further project and Agent checks belong to normal engineering work.
+## Recovery and trigger follow-up
+
+On `4496474`, Windows and WSL each passed 73 Engineering Workflow tests, 17 Adaptive Skills tests, and the generated catalog check. The recovery regression ends a real writer process after a filesystem replacement, both during first installation and during an update with unchanged instructions. The checkout locates the correct pending transaction and recovers it without changing the default state. Other checks cover history without a current deployment, malformed state, a relative entry point, and a linked runtime. Explicit state selection remains available when automatic discovery stops.
+
+Windows updated its four existing adapters and WSL updated its two existing adapters. The installed CLI reported `OK` and `REPORT_ONLY` on both, and the repeat plan returned no changes. Both distributions used fingerprint `c09da3b568f95d99215474e85732c2ea49e35eafd418dc67b3efcf79933a9f21`. Read-only rollback preflight passed for all six Windows and all four WSL targets in the new transactions. The rollback itself was exercised in isolated tests.
+
+Reused four Windows Claude Code subagent evaluations of the unchanged workflow rules on `c3f008f`. The low-risk one-line fix loaded the workflow, selected Fast, reproduced the bug, and passed a regression test. The one-line fix with deletion risk selected Standard and passed five tests after reproducing the failure. The README typo and standalone question did not load the workflow. These single-run samples came from subagents and did not use the EWK evidence runner.
+
+A fresh WSL Codex session on the updated deployment loaded the installed workflow and inspected the scratch Git repository. A one-line default could overwrite user configuration. The session reproduced the overwrite using a temporary fixture, checked byte preservation and explicit apply in two passing tests, and validated the regression evidence with EWK. The trace did not state a risk tier.
+
+A fresh Windows Codex session loaded the installed workflow for an ordinary registry defect, ran startup inspection, and reproduced three incorrect behaviors involving out-of-order revisions and unrelated events. It then passed three tests and validated the regression evidence with EWK. In both Codex sessions the task prompt described only the defect and expected behavior.
+
+The Windows Antigravity session check above is historical. This follow-up checked its installed files, while full Antigravity lifecycle execution and additional top-level Claude Code session checks remain open.
